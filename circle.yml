@@ -1,0 +1,36 @@
+general:
+  artifacts:
+  - "target/test.log"
+  - "gc.log"
+
+machine:
+  environment:
+    JAVA_OPTS: "-XX:+CMSClassUnloadingEnabled -XX:MaxMetaspaceSize=512M -XX:MetaspaceSize=512M -Xms1G -Xmx1G -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:gc.log"
+    TEST_TIMEFACTOR: 5.0
+  java:
+    version: oraclejdk8
+
+dependencies:
+  cache_directories:
+    - "~/.ivy2"
+    - "~/.sbt"
+    - "target/resolution-cache"
+    - "project/target/resolution-cache"
+  override:
+    - sbt +test:compile
+
+test:
+  pre:
+  - echo "concurrentRestrictions in Global += Tags.limit(Tags.Test, 2)" > parallelism.sbt
+  override:
+  - sbt +test:test
+  post:
+  - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+  - find . -type f -regex ".*/target/test-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+
+deployment:
+  publish-master:
+    branch: master
+    commands:
+      - build/tag.sh
+      - build/publish.sh
