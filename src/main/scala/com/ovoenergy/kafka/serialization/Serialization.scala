@@ -4,6 +4,7 @@ import java.util
 
 import cats.syntax.option._
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
+import shapeless.HList
 
 import scala.language.implicitConversions
 import scala.util.matching.Regex
@@ -15,6 +16,7 @@ object Serialization {
     implicit def function2Serializer[T](f: T => Array[Byte]): KafkaSerializer[T] = serializer(f)
     implicit def function2Deserializer[T](f: (String, Array[Byte]) => T): KafkaDeserializer[T] = deserializer(f)
     implicit def function2Deserializer[T](f: Array[Byte] => T): KafkaDeserializer[T] = deserializer(f)
+    implicit def String2TopicMatcher(topic: String): TopicMatcher = TopicMatcher.equalsTo(topic)
   }
 
   sealed trait Format
@@ -45,6 +47,10 @@ object Serialization {
   type TopicMatcher = String => Boolean
 
   object TopicMatcher {
+
+    def equalsTo(that: String): TopicMatcher = {
+      _ == that
+    }
 
     def startsWith(prefix: String): TopicMatcher = {
       _.startsWith(prefix)
@@ -106,27 +112,28 @@ object Serialization {
     d.deserialize(topic, data.drop(1))
   })
 
-  def deserializerWithMagicByteDemultiplexer[T](entries: (Byte, KafkaDeserializer[T])*): KafkaDeserializer[T] = {
-    val entriesAsMap: Map[Byte, KafkaDeserializer[T]] = entries.toMap
+  def deserializerWithMagicByteDemultiplexer[T](entries: (Format, KafkaDeserializer[T])*): KafkaDeserializer[T] = {
+    val entriesAsMap: Map[Format, KafkaDeserializer[T]] = entries.toMap
 
     deserializer({ (topic, data) =>
-      entriesAsMap(data(0)).deserialize(topic, data)
+      (for {
+        format <- Format.fromByte(data(0))
+        deserializer <- entriesAsMap.get(format)
+      } yield deserializer.deserialize(topic, data)).getOrElse(throw new RuntimeException("Wrong or unsupported serialization format byte"))
     })
   }
 
-  def deserializerWithTopicDemultiplexer[T](entries: (TopicMatcher, KafkaDeserializer[T])*): KafkaDeserializer[T] = {
+  def deserializerWithTopicDemultiplexer[T](entries: (TopicMatcher, KafkaDeserializer[T])*): KafkaDeserializer[Option[T]] = {
     deserializer({ (topic, data) =>
-      entries.find {
-        case (k, v) if k(topic) => true
-      }.get._2.deserialize(topic, data)
-      // TODO catch and trow deserialization exception
+      entries.view.collectFirst {
+        case (k, v) if k(topic) => v.deserialize(topic, data)
+      }
     })
   }
 
   def nonStrictDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[() => T] = deserializer({ (topic, data) =>
     () => d.deserialize(topic, data)
   })
-
 
 }
 
