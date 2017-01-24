@@ -8,8 +8,6 @@ import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer,
 
 object Avro4sSerialization {
 
-  // TODO define ToRecord and SchemaFor Record.Envelope
-
   def deserializeAvroBinaryAndSchemaRegistry[T: FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
     import scala.collection.JavaConverters._
 

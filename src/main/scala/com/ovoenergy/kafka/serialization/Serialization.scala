@@ -5,9 +5,17 @@ import java.util
 import cats.syntax.option._
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
 
+import scala.language.implicitConversions
 import scala.util.matching.Regex
 
 object Serialization {
+
+  object Implicits {
+    implicit def function2Serializer[T](f: (String, T) => Array[Byte]): KafkaSerializer[T] = serializer(f)
+    implicit def function2Serializer[T](f: T => Array[Byte]): KafkaSerializer[T] = serializer(f)
+    implicit def function2Deserializer[T](f: (String, Array[Byte]) => T): KafkaDeserializer[T] = deserializer(f)
+    implicit def function2Deserializer[T](f: Array[Byte] => T): KafkaDeserializer[T] = deserializer(f)
+  }
 
   sealed trait Format
 
@@ -64,6 +72,10 @@ object Serialization {
     override def serialize(topic: String, data: T): Array[Byte] = f(topic, data)
   }
 
+  def serializer[T](f: T => Array[Byte]): KafkaSerializer[T] = serializer {(_, t) =>
+    f(t)
+  }
+
   def serializerWithMagicByte[T](magicByte: Format, delegate: KafkaSerializer[T]): KafkaSerializer[T] = serializer({ (topic, data) =>
     Array(magicByte.toByte) ++ delegate.serialize(topic, data)
   })
@@ -84,6 +96,10 @@ object Serialization {
     override def close(): Unit = {}
 
     override def deserialize(topic: String, data: Array[Byte]): T = f(topic, data)
+  }
+
+  def deserializer[T](f: Array[Byte] => T): KafkaDeserializer[T] = deserializer { (_, bytes) =>
+    f(bytes)
   }
 
   def deserializerWithFirstByteDropping[T](d: KafkaDeserializer[T]): KafkaDeserializer[T] = deserializer({ (topic, data) =>
