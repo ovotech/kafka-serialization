@@ -1,21 +1,19 @@
 package com.ovoenergy.kafka.serialization
 
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import com.ovoenergy.UnitSpec
 import com.ovoenergy.kafka.serialization.Serialization.Format
-import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn.JawnParser
-import io.circe.parser._
 import io.circe.syntax._
-import java.nio.charset.StandardCharsets
 
 class CirceSerializationSpec extends UnitSpec {
   import StandardCharsets._
-  import CirceSerialization._
 
-  case class Event(id: String, name: String)
+  import CirceSerialization._
+  import UnitSpec._
 
   "CirceSerialization" when {
     "serializing" should {

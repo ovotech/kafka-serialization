@@ -4,6 +4,10 @@ import org.scalatest.concurrent.{ScalaFutures, ScaledTimeSpans}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, WordSpec}
 
+object UnitSpec {
+  case class Event(id: String, name: String)
+}
+
 abstract class UnitSpec
     extends WordSpec
     with Matchers

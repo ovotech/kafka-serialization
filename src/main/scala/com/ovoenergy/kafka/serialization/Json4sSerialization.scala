@@ -15,8 +15,11 @@ object Json4sSerialization {
 
   def serializeWithJson4sJson[T <: AnyRef](implicit jsonFormats: Formats): KafkaSerializer[T] = serializerWithMagicByte(Format.Json, serializer { (_, data) =>
     val bout = new ByteArrayOutputStream()
-    write[T, OutputStreamWriter](data, new OutputStreamWriter(bout, StandardCharsets.UTF_8))
-    bout.flush()
+    val writer = new OutputStreamWriter(bout, StandardCharsets.UTF_8)
+    write(data, writer)
+    writer.flush()
+    writer.close()
+
     bout.toByteArray
   })
 

@@ -2,27 +2,22 @@ package com.ovoenergy.kafka.serialization
 
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.ovoenergy.kafka.serialization.Avro4sSerialization._
 import com.ovoenergy.{UnitSpec, WireMockFixture}
-import com.sksamuel.avro4s.{FromRecord, SchemaFor, ToRecord}
-import Avro4sSerialization._
+import com.sksamuel.avro4s.{AvroOutputStream, FromRecord, SchemaFor, ToRecord}
 import org.apache.avro.Schema
-import org.scalatest.BeforeAndAfterEach
-import com.sksamuel.avro4s.AvroOutputStream
-import shapeless.{:+:, CNil, Coproduct, Generic}
 
 object Avro4sSerializationSpec {
-
-  case class Event(id: String, name: String)
+  import UnitSpec._
 
   implicit val eventToRecord: ToRecord[Event] = ToRecord[Event]
 }
 
 class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
-
   import Avro4sSerializationSpec._
+  import UnitSpec._
   import WireMock._
 
 
