@@ -21,7 +21,7 @@ object Avro4sSerialization {
     })
   }
 
-  def deserializeAvroBinaryAndSchemaRegistry[T: FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def deserializeAvroBinaryAndSchemaRegistryWithReaderSchema[T: FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
     import scala.collection.JavaConverters._
 
     val fromRecord = implicitly[FromRecord[T]]

@@ -76,23 +76,6 @@ object Dependencies {
     val native = "org.json4s" %% "json4s-native" % version
   }
 
-  /*
+  val wiremock = "com.github.tomakehurst" % "wiremock" % "2.4.1"
 
-    "com.chuusai" %% "shapeless" % "2.3.2",
-  "com.github.mpilquist" %% "simulacrum" % "0.10.0",
-  "org.slf4j" % "slf4j-api" % "1.7.22",
-  "org.slf4j" % "log4j-over-slf4j" % "1.7.22",
-  "ch.qos.logback" % "logback-core" % "1.1.8",
-  "ch.qos.logback" % "logback-classic" % "1.1.8",
-  "com.sksamuel.avro4s" %% "avro4s-core" % "1.6.3",
-  "com.sksamuel.avro4s" %% "avro4s-macros" % "1.6.3",
-  "com.sksamuel.avro4s" %% "avro4s-json" % "1.6.3",
-  "com.typesafe.akka" %% "akka-stream-kafka" % "0.13",
-  "io.circe" %% "circe-core" % "0.6.1",
-  "io.circe" %% "circe-generic" % "0.6.1",
-  "io.circe" %% "circe-parser" % "0.6.1",
-  "io.confluent" % "kafka-avro-serializer" % "3.1.1" exclude("org.slf4j", "slf4j-log4j12"),
-  "org.apache.kafka" %% "kafka" % "0.10.0.0" exclude("org.slf4j", "slf4j-log4j12"),
-
-   */
 }
