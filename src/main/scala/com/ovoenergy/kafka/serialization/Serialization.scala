@@ -112,6 +112,17 @@ object Serialization {
     d.deserialize(topic, data.drop(1))
   })
 
+  def deserializerWithFormatCheck[T](expectedFormat: Format, d: KafkaDeserializer[T]): KafkaDeserializer[T] = deserializer({ (topic, data) =>
+    if(data.isEmpty) {
+      // Kafka API requirements :(
+      null.asInstanceOf[T]
+    } else if(data(0) == Format.toByte(expectedFormat)) {
+      d.deserialize(topic, data.drop(1))
+    } else {
+      throw new RuntimeException("The expected format does not match")
+    }
+  })
+
   def deserializerWithMagicByteDemultiplexer[T](entries: (Format, KafkaDeserializer[T])*): KafkaDeserializer[T] = {
     val entriesAsMap: Map[Format, KafkaDeserializer[T]] = entries.toMap
 

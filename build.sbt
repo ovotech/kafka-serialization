@@ -40,7 +40,8 @@ lazy val `kafka-serialization-magic` = (project in file("."))
       scalaCheck % Test,
       scalaMock.scalaTestSupport % Test,
       logback.classic % Test,
-      wiremock % Test
+      wiremock % Test,
+      Circe.generic % Test
     ),
     headers := Map(
       "java" -> Apache2_0("2017", "OVO Energy"),

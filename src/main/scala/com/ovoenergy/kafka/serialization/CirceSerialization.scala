@@ -14,7 +14,7 @@ object CirceSerialization {
     data.asJson.noSpaces.getBytes(StandardCharsets.UTF_8)
   })
 
-  def deserializerWithCirceJson[T: Decoder]: KafkaDeserializer[T] = deserializerWithFirstByteDropping(deserializer { (_, data) =>
+  def deserializerWithCirceJson[T: Decoder]: KafkaDeserializer[T] = deserializerWithFormatCheck(Format.Json, deserializer { (_, data) =>
     (for {
       json <- parse(new String(data, StandardCharsets.UTF_8))
       t <- json.as[T]
