@@ -47,7 +47,7 @@ class Json4sSerializationSpec extends UnitSpec {
         val event = Event("123", "Foo")
         val deserializer = deserializeWithJson4s[Event]
 
-        an[Exception] should be thrownBy deserializer.deserialize("Does not matter", Array(120: Byte) ++ Array.fill(100)(Random.nextInt().toByte))
+        an[Exception] should be thrownBy deserializer.deserialize("Does not matter", Array(90: Byte) ++ write(event).getBytes(UTF_8))
       }
 
       "parse the json" in {

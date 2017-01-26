@@ -23,7 +23,7 @@ object Json4sSerialization {
     bout.toByteArray
   })
 
-  def deserializeWithJson4s[T: TypeTag](implicit jsonFormats: Formats): KafkaDeserializer[T] = deserializerWithFirstByteDropping(deserializer { (_, data) =>
+  def deserializeWithJson4s[T: TypeTag](implicit jsonFormats: Formats): KafkaDeserializer[T] = deserializerWithFormatCheck(Format.Json, deserializer { (_, data) =>
     val tt = implicitly[TypeTag[T]]
     implicit val cl = ClassTag[T](tt.mirror.runtimeClass(tt.tpe))
     read[T](new InputStreamReader(new ByteArrayInputStream(data), StandardCharsets.UTF_8))
