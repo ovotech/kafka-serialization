@@ -25,7 +25,11 @@ lazy val `kafka-serialization-magic` = (project in file("."))
     git.useGitDescribe := true,
     scalaVersion := "2.12.1",
     crossScalaVersions := Seq(scalaVersion.value, "2.11.8"),
-    resolvers ++= Seq(Resolver.mavenLocal, Resolver.typesafeRepo("releases")),
+    resolvers ++= Seq(
+      Resolver.mavenLocal,
+      Resolver.typesafeRepo("releases"),
+      "confluent-release" at "http://packages.confluent.io/maven/"
+    ),
     libraryDependencies ++= Seq(
       kafka.client,
       kafka.avroSerializer,
