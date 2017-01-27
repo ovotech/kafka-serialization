@@ -19,7 +19,7 @@ class CirceSerializationSpec extends UnitSpec {
     "serializing" should {
       "put the Json format byte before the body" in {
 
-        val serializer = serializerWithCirceJson[Event]
+        val serializer = circeJsonSerializer[Event]
         val bytes = serializer.serialize("Does not matter", Event("123", "MyEvent"))
 
         bytes(0) shouldBe Format.toByte(Format.Json)
@@ -27,7 +27,7 @@ class CirceSerializationSpec extends UnitSpec {
 
       "put the Json body after the format byte" in {
 
-        val serializer = serializerWithCirceJson[Event]
+        val serializer = circeJsonSerializer[Event]
         val event = Event("123", "MyEvent")
         val bytes = serializer.serialize("Does not matter", event)
 
@@ -40,7 +40,7 @@ class CirceSerializationSpec extends UnitSpec {
 
         val event = Event("123", "MyEvent")
         val jsonBytes = event.asJson.noSpaces.getBytes(UTF_8)
-        val deserializer = deserializerWithCirceJson[Event]
+        val deserializer = circeJsonDeserializer[Event]
 
         an[Exception] should be thrownBy deserializer.deserialize("does not matter", Array(90: Byte) ++ jsonBytes)
       }
@@ -49,7 +49,7 @@ class CirceSerializationSpec extends UnitSpec {
 
         val event = Event("123", "MyEvent")
         val jsonBytes = event.asJson.noSpaces.getBytes(UTF_8)
-        val deserializer = deserializerWithCirceJson[Event]
+        val deserializer = circeJsonDeserializer[Event]
 
         val deserialized = deserializer.deserialize("does not matter", Array(Format.toByte(Format.Json)) ++ jsonBytes)
 

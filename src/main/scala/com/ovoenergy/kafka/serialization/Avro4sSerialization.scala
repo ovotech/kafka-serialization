@@ -1,6 +1,6 @@
 package com.ovoenergy.kafka.serialization
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream
@@ -8,14 +8,13 @@ import com.ovoenergy.kafka.serialization.Serialization._
 import com.sksamuel.avro4s._
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
-import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.{GenericDatumReader, GenericDatumWriter, GenericRecord}
 import org.apache.avro.io.{DecoderFactory, EncoderFactory}
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
 
 object Avro4sSerialization {
 
-  def deserializeAvroBinaryAndSchemaRegistry[T: FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
     import scala.collection.JavaConverters._
 
     val fromRecord = implicitly[FromRecord[T]]
@@ -28,7 +27,7 @@ object Avro4sSerialization {
     })
   }
 
-  def deserializeAvroBinaryAndSchemaRegistryWithReaderSchema[T: FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
     import scala.collection.JavaConverters._
 
     val fromRecord = implicitly[FromRecord[T]]
@@ -42,7 +41,7 @@ object Avro4sSerialization {
     }
   }
 
-  def serializeWithAvroBinaryAndSchemaRegistry[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] = {
+  def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] = {
     import scala.collection.JavaConverters._
 
     val toRecord = implicitly[ToRecord[T]]
@@ -54,11 +53,11 @@ object Avro4sSerialization {
     }
   }
 
-  def avroJsonAndSchemaRegistryDeserializer[T : FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializerWithReaderSchema[T : FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
 
     val schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryEndpoint, 1000)
 
-    deserializerWithFormatCheck(Format.AvroJsonWithSchema, deserializer{ (topic, data) =>
+    formatCheckingDeserializer(Format.AvroJsonSchemaId, deserializer{ (topic, data) =>
 
       val buffer = ByteBuffer.wrap(data)
       val schemaId = buffer.getInt
@@ -75,11 +74,11 @@ object Avro4sSerialization {
 
   }
 
-  def avroJsonAndSchemaRegistryWithReaderSchemaDeserializer[T : FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializer[T : FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
 
     val schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryEndpoint, 1000)
 
-    deserializerWithFormatCheck(Format.AvroJsonWithSchema, deserializer{ (topic, data) =>
+    formatCheckingDeserializer(Format.AvroJsonSchemaId, deserializer{ (topic, data) =>
 
       val buffer = ByteBuffer.wrap(data)
       val schemaId = buffer.getInt
@@ -96,12 +95,12 @@ object Avro4sSerialization {
 
   }
 
-  def avroJsonAndSchemaRegistrySerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] = {
+  def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] = {
 
     val schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryEndpoint, 1000)
     val toRecord: ToRecord[T] = implicitly
 
-    serializerWithMagicByte(Format.AvroBinaryWithSchema, serializer{ (topic, t) =>
+    formatSerializer(Format.AvroJsonSchemaId, serializer{ (topic, t) =>
 
       val record = toRecord(t)
       implicit val schemaFor: SchemaFor[T] = new SchemaFor[T] {

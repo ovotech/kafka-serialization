@@ -23,7 +23,7 @@ class Json4sSerializationSpec extends UnitSpec {
       "put the Json format byte before the json body" in {
 
         val event = Event("123", "Foo")
-        val serializer = serializeWithJson4sJson[Event]
+        val serializer = json4sSerializer[Event]
 
         val bytes = serializer.serialize("Does not matter", event)
 
@@ -33,7 +33,7 @@ class Json4sSerializationSpec extends UnitSpec {
       "put the Json json body after the format byte" in {
 
         val event = Event("123", "Foo")
-        val serializer = serializeWithJson4sJson[Event]
+        val serializer = json4sSerializer[Event]
 
         val bytes = serializer.serialize("Does not matter", event)
 
@@ -45,7 +45,7 @@ class Json4sSerializationSpec extends UnitSpec {
       "raise an exception if the format is not Json" in {
 
         val event = Event("123", "Foo")
-        val deserializer = deserializeWithJson4s[Event]
+        val deserializer = json4sDeserializer[Event]
 
         an[Exception] should be thrownBy deserializer.deserialize("Does not matter", Array(90: Byte) ++ write(event).getBytes(UTF_8))
       }
@@ -53,7 +53,7 @@ class Json4sSerializationSpec extends UnitSpec {
       "parse the json" in {
 
         val event = Event("123", "Foo")
-        val deserializer = deserializeWithJson4s[Event]
+        val deserializer = json4sDeserializer[Event]
 
         val bytes = Array(Format.toByte(Format.Json)) ++ write(event).getBytes(UTF_8)
 

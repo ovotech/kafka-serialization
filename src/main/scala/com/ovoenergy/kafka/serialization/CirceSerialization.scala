@@ -11,11 +11,11 @@ import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer,
 
 object CirceSerialization {
 
-  def serializerWithCirceJson[T: Encoder]: KafkaSerializer[T] = serializerWithMagicByte(Format.Json, serializer { (_, data) =>
+  def circeJsonSerializer[T: Encoder]: KafkaSerializer[T] = formatSerializer(Format.Json, serializer { (_, data) =>
     data.asJson.noSpaces.getBytes(StandardCharsets.UTF_8)
   })
 
-  def deserializerWithCirceJson[T: Decoder]: KafkaDeserializer[T] = deserializerWithFormatCheck(Format.Json, deserializer { (_, data) =>
+  def circeJsonDeserializer[T: Decoder]: KafkaDeserializer[T] = formatCheckingDeserializer(Format.Json, deserializer { (_, data) =>
     (for {
       json <- parse(new String(data, StandardCharsets.UTF_8)): Either[Error, Json]
       t <- json.as[T]: Either[Error, T]

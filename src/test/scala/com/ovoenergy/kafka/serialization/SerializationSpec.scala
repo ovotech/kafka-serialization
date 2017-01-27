@@ -29,15 +29,15 @@ class SerializationSpec extends UnitSpec {
     "deserializing" should {
 
       "add the magic byte to the serialized data" in {
-        serializerWithMagicByte(Format.Json, stringSerializer).serialize("test", "Test")(0) should be(Format.toByte(Format.Json))
+        formatSerializer(Format.Json, stringSerializer).serialize("test", "Test")(0) should be(Format.toByte(Format.Json))
       }
 
       "demultiplex the magic byte correctly" in {
 
-        val serializer = serializerWithMagicByte(Format.Json, stringSerializer)
-        val deserializer: Deserializer[String] = deserializerWithMagicByteDemultiplexer(
-          Format.Json -> deserializerWithFirstByteDropping(stringDeserializer),
-          Format.AvroBinaryWithSchema -> deserializerWithFirstByteDropping({ data: Array[Byte] => new String(data.map(b => (b + 1).asInstanceOf[Byte]), UTF_8) }) // change the byte value
+        val serializer = formatSerializer(Format.Json, stringSerializer)
+        val deserializer: Deserializer[String] = formatDemultiplexerDeserializer(
+          Format.Json -> formatDroppingDeserializer(stringDeserializer),
+          Format.AvroBinarySchemaId -> formatDroppingDeserializer({ data: Array[Byte] => new String(data.map(b => (b + 1).asInstanceOf[Byte]), UTF_8) }) // change the byte value
         )
 
         val expectedString = "TestString"
@@ -49,7 +49,7 @@ class SerializationSpec extends UnitSpec {
       "skip the magic byte" in {
 
         val expectedBytes = "test string".getBytes(UTF_8)
-        val deserializer = deserializerWithFirstByteDropping { data: Array[Byte] => data }
+        val deserializer = formatDroppingDeserializer { data: Array[Byte] => data }
 
         deserializer.deserialize("test-topic", Array(12: Byte) ++ expectedBytes).deep shouldBe expectedBytes.deep
       }
@@ -60,7 +60,7 @@ class SerializationSpec extends UnitSpec {
         val intTopic = "int-topic"
 
         // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
-        val deserializer = deserializerWithTopicDemultiplexer(
+        val deserializer = topicDemultiplexerDeserializer(
           TopicMatcher.equalsTo(stringTopic)->stringDeserializer.asInstanceOf[Deserializer[Any]],
           TopicMatcher.equalsTo(intTopic)->intDeserializer.asInstanceOf[Deserializer[Any]]
         )

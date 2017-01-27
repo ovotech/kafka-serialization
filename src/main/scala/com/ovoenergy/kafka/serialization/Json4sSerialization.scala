@@ -13,7 +13,7 @@ import scala.reflect.runtime.universe._
 
 object Json4sSerialization {
 
-  def serializeWithJson4sJson[T <: AnyRef](implicit jsonFormats: Formats): KafkaSerializer[T] = serializerWithMagicByte(Format.Json, serializer { (_, data) =>
+  def json4sSerializer[T <: AnyRef](implicit jsonFormats: Formats): KafkaSerializer[T] = formatSerializer(Format.Json, serializer { (_, data) =>
     val bout = new ByteArrayOutputStream()
     val writer = new OutputStreamWriter(bout, StandardCharsets.UTF_8)
     write(data, writer)
@@ -23,7 +23,7 @@ object Json4sSerialization {
     bout.toByteArray
   })
 
-  def deserializeWithJson4s[T: TypeTag](implicit jsonFormats: Formats): KafkaDeserializer[T] = deserializerWithFormatCheck(Format.Json, deserializer { (_, data) =>
+  def json4sDeserializer[T: TypeTag](implicit jsonFormats: Formats): KafkaDeserializer[T] = formatCheckingDeserializer(Format.Json, deserializer { (_, data) =>
     val tt = implicitly[TypeTag[T]]
     implicit val cl = ClassTag[T](tt.mirror.runtimeClass(tt.tpe))
     read[T](new InputStreamReader(new ByteArrayInputStream(data), StandardCharsets.UTF_8))

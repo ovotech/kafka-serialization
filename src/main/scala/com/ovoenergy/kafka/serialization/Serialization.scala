@@ -4,7 +4,6 @@ import java.util
 
 import cats.syntax.option._
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
-import shapeless.HList
 
 import scala.language.implicitConversions
 import scala.util.matching.Regex
@@ -23,21 +22,21 @@ object Serialization {
 
   object Format {
 
-    case object AvroBinaryWithSchema extends Format
+    case object AvroBinarySchemaId extends Format
 
-    case object AvroJsonWithSchema extends Format
+    case object AvroJsonSchemaId extends Format
 
     case object Json extends Format
 
     def toByte(f: Format): Byte = f match {
-      case AvroBinaryWithSchema => 0
-      case AvroJsonWithSchema => 1
+      case AvroBinarySchemaId => 0
+      case AvroJsonSchemaId => 1
       case Json => 2
     }
 
     def fromByte(b: Byte): Option[Format] = b match {
-      case 0 => AvroBinaryWithSchema.some
-      case 1 => AvroJsonWithSchema.some
+      case 0 => AvroBinarySchemaId.some
+      case 1 => AvroJsonSchemaId.some
       case 2 => Json.some
       case _ => None
     }
@@ -86,11 +85,11 @@ object Serialization {
     f(t)
   }
 
-  def serializerWithMagicByte[T](magicByte: Format, delegate: KafkaSerializer[T]): KafkaSerializer[T] = serializer({ (topic, data) =>
+  def formatSerializer[T](magicByte: Format, delegate: KafkaSerializer[T]): KafkaSerializer[T] = serializer({ (topic, data) =>
     Array(magicByte.toByte) ++ delegate.serialize(topic, data)
   })
 
-  def serializerWithTopicMultiplexer[T](entries: (TopicMatcher, KafkaSerializer[T])*): KafkaSerializer[T] = {
+  def topicMultiplexerSerializer[T](entries: (TopicMatcher, KafkaSerializer[T])*): KafkaSerializer[T] = {
     serializer({ (topic, data) =>
       entries.find {
         case (k, v) if k(topic) => true
@@ -112,22 +111,22 @@ object Serialization {
     f(bytes)
   }
 
-  def deserializerWithFirstByteDropping[T](d: KafkaDeserializer[T]): KafkaDeserializer[T] = deserializer({ (topic, data) =>
+  def formatDroppingDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[T] = deserializer({ (topic, data) =>
     d.deserialize(topic, data.drop(1))
   })
 
-  def deserializerWithFormatCheck[T](expectedFormat: Format, d: KafkaDeserializer[T]): KafkaDeserializer[T] = deserializer({ (topic, data) =>
+  def formatCheckingDeserializer[T](expectedFormat: Format, d: KafkaDeserializer[T]): KafkaDeserializer[T] = deserializer({ (topic, data) =>
     if(data.isEmpty) {
       // Kafka API requirements :(
       null.asInstanceOf[T]
     } else if(data(0) == Format.toByte(expectedFormat)) {
       d.deserialize(topic, data.drop(1))
     } else {
-      throw new RuntimeException("The expected format does not match")
+      throw new RuntimeException(s"The expected format does not match: ${data(0)}")
     }
   })
 
-  def deserializerWithMagicByteDemultiplexer[T](entries: (Format, KafkaDeserializer[T])*): KafkaDeserializer[T] = {
+  def formatDemultiplexerDeserializer[T](entries: (Format, KafkaDeserializer[T])*): KafkaDeserializer[T] = {
     val entriesAsMap: Map[Format, KafkaDeserializer[T]] = entries.toMap
 
     deserializer({ (topic, data) =>
@@ -138,7 +137,7 @@ object Serialization {
     })
   }
 
-  def deserializerWithTopicDemultiplexer[T](entries: (TopicMatcher, KafkaDeserializer[T])*): KafkaDeserializer[Option[T]] = {
+  def topicDemultiplexerDeserializer[T](entries: (TopicMatcher, KafkaDeserializer[T])*): KafkaDeserializer[Option[T]] = {
     deserializer({ (topic, data) =>
       entries.view.collectFirst {
         case (k, v) if k(topic) => v.deserialize(topic, data)
