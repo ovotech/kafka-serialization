@@ -22,7 +22,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
 
 
   "Avro4sSerialization" when {
-    "serializing" when {
+    "serializing binary" when {
       "is value serializer" should {
         "register the schema to the schemaRegistry for value" in {
 
@@ -65,7 +65,50 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
       }
     }
 
-    "deserializing" when {
+    "serializing json" when {
+      "is value serializer" should {
+        "register the schema to the schemaRegistry for value" in {
+
+          val topic = "test-topic"
+          val subject = s"$topic-value"
+
+          testWithPostSchemaExpected(subject){
+            val serializer = avroJsonAndSchemaRegistrySerializer(wireMockEndpoint, isKey = false)
+            serializer.serialize(topic, Event("test", "test"))
+          }
+        }
+
+        "register the schema to the schemaRegistry for value only once" in {
+
+          val topic = "test-topic"
+          val subject = s"$topic-value"
+
+          // This verifies that the HTTP cal to the schema regisrty happen only once.
+          testWithPostSchemaExpected(subject){
+            val serializer = avroJsonAndSchemaRegistrySerializer(wireMockEndpoint, isKey = false)
+            serializer.serialize(topic, Event("test_1", "test_1"))
+            serializer.serialize(topic, Event("test_2", "test_2"))
+            serializer.serialize(topic, Event("test_3", "test_3"))
+          }
+        }
+
+      }
+
+      "is key serializer" should {
+        "register the schema to the schemaRegistry for key" in {
+
+          val topic = "test-topic"
+          val subject = s"$topic-key"
+
+          testWithPostSchemaExpected(subject){
+            val serializer = avroJsonAndSchemaRegistrySerializer(wireMockEndpoint, isKey = true)
+            serializer.serialize(topic, Event("test", "test"))
+          }
+        }
+      }
+    }
+
+    "deserializing binary" when {
       "the writer schema is used" should {
         "read the schema from the registry" in {
 
@@ -110,6 +153,50 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
       }
     }
 
+    "deserializing json" when {
+      "the writer schema is used" should {
+        "read the schema from the registry" in {
+
+          implicit val eventFromRecord: FromRecord[Event] = FromRecord[Event]
+          implicit val eventSchemaFor: SchemaFor[Event] = SchemaFor[Event]
+
+          val deserializer = avroJsonAndSchemaRegistryDeserializer(wireMockEndpoint, isKey = false)
+
+          val topic = "test-topic"
+          val schemaId = 123
+
+          val expectedEvent = Event("test", "test")
+          val bytes = asAvroWithSchemaIdBytes(expectedEvent, schemaId)
+
+          givenSchema(schemaId, eventSchemaFor())
+
+          val deserialized = deserializer.deserialize(topic, bytes)
+          deserialized shouldBe expectedEvent
+        }
+
+        "read the schema from the registry only once" in {
+
+          implicit val eventFromRecord: FromRecord[Event] = FromRecord[Event]
+          implicit val eventSchemaFor: SchemaFor[Event] = SchemaFor[Event]
+
+          val deserializer = avroJsonAndSchemaRegistryDeserializer(wireMockEndpoint, isKey = false)
+
+          val topic = "test-topic"
+          val schemaId = 123
+
+          val expectedEvent = Event("test", "test")
+          val bytes = asAvroWithSchemaIdBytes(expectedEvent, schemaId)
+
+          givenSchema(schemaId, eventSchemaFor())
+
+          deserializer.deserialize(topic, bytes)
+          deserializer.deserialize(topic, bytes)
+
+
+          verify(1, getRequestedFor(urlMatching(s"/schemas/ids/$schemaId")))
+        }
+      }
+    }
   }
 
   private def givenSchema[T: SchemaFor](schemaId: Int, schema: Schema) = {

@@ -25,16 +25,20 @@ object Serialization {
 
     case object AvroBinaryWithSchema extends Format
 
+    case object AvroJsonWithSchema extends Format
+
     case object Json extends Format
 
     def toByte(f: Format): Byte = f match {
       case AvroBinaryWithSchema => 0
-      case Json => 1
+      case AvroJsonWithSchema => 1
+      case Json => 2
     }
 
     def fromByte(b: Byte): Option[Format] = b match {
       case 0 => AvroBinaryWithSchema.some
-      case 1 => Json.some
+      case 1 => AvroJsonWithSchema.some
+      case 2 => Json.some
       case _ => None
     }
 
