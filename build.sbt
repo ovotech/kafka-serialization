@@ -56,5 +56,7 @@ lazy val `kafka-serialization-magic` = (project in file("."))
     tutTargetDirectory := baseDirectory.value,
     bintrayOrganization := Some("ovotech"),
     bintrayRepository := "maven",
-    bintrayPackageLabels := Seq("kafka", "serialization")
+    bintrayPackageLabels := Seq("kafka", "serialization"),
+    publishTo := Some("Ovotech Nexus Repo Releases" at "http://nexus.ovotech.org.uk:8081/nexus/content/repositories/releases/"),
+    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
   )
