@@ -9,7 +9,7 @@ lazy val `kafka-serialization-magic` = (project in file("."))
   .settings(
     organization := "com.ovoenergy",
     organizationHomepage := Some(url("https://www.ovoenergy.com/")),
-    name := "kafka-serialization-magic",
+    name := "kafka-serialization",
     homepage := Some(url("https://github.com/ovotech/kafka-serialization")),
     startYear := Some(2016),
     licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
