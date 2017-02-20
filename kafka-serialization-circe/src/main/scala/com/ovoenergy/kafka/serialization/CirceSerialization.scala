@@ -3,6 +3,7 @@ package com.ovoenergy.kafka.serialization
 import java.nio.charset.StandardCharsets
 
 import com.ovoenergy.kafka.serialization.Serialization._
+import cats.syntax.either._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder, Error, Json}

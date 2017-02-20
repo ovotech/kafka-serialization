@@ -71,10 +71,8 @@ object Dependencies {
 
   object Json4s {
 
-    private val version = "3.5.0"
-
-    val core = "org.json4s" %% "json4s-core" % version
-    val native = "org.json4s" %% "json4s-native" % version
+    def core(version: String) = "org.json4s" %% "json4s-core" % version
+    def native(version: String) = "org.json4s" %% "json4s-native" % version
   }
 
   val wiremock = "com.github.tomakehurst" % "wiremock" % "2.4.1"
@@ -95,10 +93,14 @@ object Dependencies {
     kafka.client
   ) ++ tests
 
-  val json4s = l ++= Seq(
-    Json4s.core,
-    Json4s.native
-  ) ++ tests
+  val json4s = l <++= scalaVersion { v: String =>
+    val version = if (v.startsWith("2.12")) {
+      "3.5.0"
+    }  else {
+      "3.3.0"
+    }
+    Seq(Json4s.core(version), Json4s.native(version)) ++ tests
+  }
 
   val avro4s = l ++= Seq(
     Avro4s.core,
