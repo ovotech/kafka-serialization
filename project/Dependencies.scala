@@ -1,3 +1,4 @@
+import sbt.Keys._
 import sbt._
 
 object Dependencies {
@@ -77,5 +78,36 @@ object Dependencies {
   }
 
   val wiremock = "com.github.tomakehurst" % "wiremock" % "2.4.1"
+
+  val l = libraryDependencies
+
+  val tests = Seq(
+    Typesafe.config % Test,
+    scalaTest % Test,
+    scalaCheck % Test,
+    scalaMock.scalaTestSupport % Test,
+    logback.classic % Test,
+    wiremock % Test,
+    Circe.generic % Test
+  )
+
+  val core = l ++= Seq(
+    kafka.client
+  ) ++ tests
+
+  val json4s = l ++= Seq(
+    Json4s.core,
+    Json4s.native
+  ) ++ tests
+
+  val avro4s = l ++= Seq(
+    Avro4s.core,
+    kafka.avroSerializer
+  ) ++ tests
+
+  val circe = l ++= Seq(
+    Circe.core,
+    Circe.parser
+  ) ++ tests
 
 }
