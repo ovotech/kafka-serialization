@@ -121,7 +121,7 @@ object Serialization {
     } else if(data(0) == Format.toByte(expectedFormat)) {
       d.deserialize(topic, data.drop(1))
     } else {
-      throw new RuntimeException(s"The expected format does not match: ${data(0)}")
+      d.deserialize(topic, data)
     }
   })
 
