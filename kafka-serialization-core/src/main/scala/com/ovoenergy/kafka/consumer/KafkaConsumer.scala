@@ -35,7 +35,7 @@ object KafkaConsumer extends DurationUtils {
     override protected implicit def askTimeout: Timeout = getFiniteDuration(config.getString("kafka.consumer.askTimeout"))
   }
 
-  def apply(config: ConsumerConfig, jConsumer: Consumer[Key, Try[Envelope]])(implicit system: ActorRefFactory): KafkaConsumer = new KafkaConsumer {
+  def apply(config: ConsumerConfig, jConsumer: Consumer[Try[Key], Try[Envelope]])(implicit system: ActorRefFactory): KafkaConsumer = new KafkaConsumer {
     override protected val consumer = KafkaConsumerClient(config, jConsumer)
 
     override protected implicit def askTimeout: Timeout = config.askTimeout
