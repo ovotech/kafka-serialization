@@ -3,10 +3,10 @@ package com.ovoenergy.kafka.consumer
 import akka.actor.{Actor, ActorRef, ActorRefFactory, Cancellable, Props}
 import akka.pattern._
 import com.ovoenergy.kafka.consumer.Consumers._
-import com.ovoenergy.kafka.model.Event._
 import com.ovoenergy.kafka.consumer.KafkaConsumerClient.Protocol
 import com.ovoenergy.kafka.consumer.KafkaConsumerClient.Protocol.Subscribe
 import com.ovoenergy.kafka.model.Event
+import com.ovoenergy.kafka.model.Event._
 import com.ovoenergy.kafka.util.ConfigUtils._
 import com.ovoenergy.kafka.util.KafkaUtils
 import com.typesafe.config.Config
@@ -14,20 +14,20 @@ import org.apache.kafka.clients.consumer.{KafkaConsumer => JavaKafkaConsumer, _}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
-
+import scala.util.Try
 
 /**
   * A lightweight, non-blocking wrapper around the Apache Kafka Consumer class.
   *
   * The client does not handle errors.
   */
-private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consumerFactory: () => Consumer[Key, Envelope]) extends Actor with KafkaUtils {
+private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consumerFactory: () => Consumer[Key, Try[Envelope]]) extends Actor with KafkaUtils {
 
   private implicit val log = context.system.log
 
   private implicit val ec = context.system.dispatchers.lookup("kafka.consumer.dispatcher")
 
-  private var consumer: Consumer[Key, Envelope] = _
+  private var consumer: Consumer[Key, Try[Envelope]] = _
 
   private var subscriber: Option[Subscribe] = None
 
@@ -57,7 +57,7 @@ private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consum
     case _: Protocol.Poll =>
   }
 
-  private def consuming(records: ConsumerRecords[Key, Envelope]): Receive = {
+  private def consuming(records: ConsumerRecords[Key, Try[Envelope]]): Receive = {
     feedSubscribers(records, subscriber.toSeq).pipeTo(self)
     subscribing orElse failing orElse {
       case _: Protocol.Poll =>
@@ -100,7 +100,7 @@ private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consum
 
 object KafkaConsumerClient {
 
-  type Subscriber = PartialFunction[Event, Future[Unit]]
+  type Subscriber = PartialFunction[Try[Event], Future[Unit]]
 
   object Protocol {
 
@@ -116,10 +116,10 @@ object KafkaConsumerClient {
 
   def apply(config: Config, topic: String, clientId: String)(implicit system: ActorRefFactory): ActorRef = {
     val consumerProperties = propertiesFrom(config.getConfig("kafka.consumer.properties"))
-    apply(ConsumerConfig(config, topic, clientId), new JavaKafkaConsumer[Key, Envelope](consumerProperties))
+    apply(ConsumerConfig(config, topic, clientId), new JavaKafkaConsumer[Key, Try[Envelope]](consumerProperties))
   }
 
-  def apply(config: ConsumerConfig, consumer: Consumer[Key, Envelope])(implicit system: ActorRefFactory): ActorRef =
+  def apply(config: ConsumerConfig, consumer: Consumer[Key, Try[Envelope]])(implicit system: ActorRefFactory): ActorRef =
     system.actorOf(Props(new KafkaConsumerClient(config, () => consumer)), config.consumerName)
 
 }

@@ -24,10 +24,10 @@ private[consumer] trait Consumers {
     * @param records     records to consume
     * @param subscribers subscribers to feed
     */
-  def feedSubscribers(records: ConsumerRecords[Key, Envelope], subscribers: Seq[Subscribe])(implicit ec: ExecutionContext): Future[Protocol.Done.type] = Future.sequence {
+  def feedSubscribers(records: ConsumerRecords[Key, Try[Envelope]], subscribers: Seq[Subscribe])(implicit ec: ExecutionContext): Future[Protocol.Done.type] = Future.sequence {
     for {
       record <- records
-      event = Event(record.topic(), Message(record.key(), record.value()))
+      event = record.value().map(envelope => Event(record.topic(), Message(record.key(), envelope)))
       subscriber <- subscribers if subscriber.value.isDefinedAt(event)
     } yield {
       Try(subscriber.value(event)) match {

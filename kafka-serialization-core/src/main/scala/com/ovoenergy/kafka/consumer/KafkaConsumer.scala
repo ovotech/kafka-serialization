@@ -11,6 +11,7 @@ import com.typesafe.config.Config
 import org.apache.kafka.clients.consumer.Consumer
 
 import scala.concurrent.Future
+import scala.util.Try
 
 trait KafkaConsumer {
 
@@ -34,7 +35,7 @@ object KafkaConsumer extends DurationUtils {
     override protected implicit def askTimeout: Timeout = getFiniteDuration(config.getString("kafka.consumer.askTimeout"))
   }
 
-  def apply(config: ConsumerConfig, jConsumer: Consumer[Key, Envelope])(implicit system: ActorRefFactory): KafkaConsumer = new KafkaConsumer {
+  def apply(config: ConsumerConfig, jConsumer: Consumer[Key, Try[Envelope]])(implicit system: ActorRefFactory): KafkaConsumer = new KafkaConsumer {
     override protected val consumer = KafkaConsumerClient(config, jConsumer)
 
     override protected implicit def askTimeout: Timeout = config.askTimeout
