@@ -4,6 +4,10 @@ import sbt._
 object Dependencies {
 
   object Typesafe {
+    val akka = Def.setting(scalaBinaryVersion.value match {
+      case "2.11" => "com.typesafe.akka" %% s"akka-actor" % "2.3.16"
+      case "2.12" => "com.typesafe.akka" %% s"akka-actor" % "2.4.16"
+    })
     val config = "com.typesafe" % "config" % "1.3.1"
   }
 
@@ -49,8 +53,6 @@ object Dependencies {
     val client = "org.apache.kafka" % "kafka-clients" % version exclude("org.slf4j", "slf4j-log4j12")
   }
 
-  val dockerClient = "com.spotify" % "docker-client" % "7.0.0"
-
   object Circe {
 
     private val version = "0.6.1"
@@ -71,45 +73,30 @@ object Dependencies {
 
   object Json4s {
 
-    def core(version: String) = "org.json4s" %% "json4s-core" % version
-    def native(version: String) = "org.json4s" %% "json4s-native" % version
+    val core = Def.setting(scalaBinaryVersion.value match {
+      case "2.11" => "org.json4s" %% "json4s-core" % "3.3.0"
+      case "2.12" => "org.json4s" %% "json4s-core" % "3.5.0"
+    })
+
+    val native = Def.setting(scalaBinaryVersion.value match {
+      case "2.11" => "org.json4s" %% "json4s-native" % "3.3.0"
+      case "2.12" => "org.json4s" %% "json4s-native" % "3.5.0"
+    })
+
   }
 
   val wiremock = "com.github.tomakehurst" % "wiremock" % "2.4.1"
 
+  val tests = Seq(scalaTest, scalaCheck, scalaMock.scalaTestSupport, logback.classic, wiremock, Circe.generic).map(_ % Test)
+
   val l = libraryDependencies
 
-  val tests = Seq(
-    Typesafe.config % Test,
-    scalaTest % Test,
-    scalaCheck % Test,
-    scalaMock.scalaTestSupport % Test,
-    logback.classic % Test,
-    wiremock % Test,
-    Circe.generic % Test
-  )
+  val core = l ++= Seq(Typesafe.akka.value, Typesafe.config, kafka.client) ++ tests
 
-  val core = l ++= Seq(
-    kafka.client
-  ) ++ tests
+  val json4s = l ++= Seq(Json4s.core.value, Json4s.native.value) ++ tests
 
-  val json4s = l <++= scalaVersion { v: String =>
-    val version = if (v.startsWith("2.12")) {
-      "3.5.0"
-    }  else {
-      "3.3.0"
-    }
-    Seq(Json4s.core(version), Json4s.native(version)) ++ tests
-  }
+  val avro4s = l ++= Seq(Avro4s.core, kafka.avroSerializer) ++ tests
 
-  val avro4s = l ++= Seq(
-    Avro4s.core,
-    kafka.avroSerializer
-  ) ++ tests
-
-  val circe = l ++= Seq(
-    Circe.core,
-    Circe.parser
-  ) ++ tests
+  val circe = l ++= Seq(Circe.core, Circe.parser) ++ tests
 
 }
