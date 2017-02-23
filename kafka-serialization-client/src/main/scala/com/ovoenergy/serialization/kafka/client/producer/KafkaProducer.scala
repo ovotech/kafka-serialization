@@ -1,25 +1,24 @@
 package com.ovoenergy.serialization.kafka.client.producer
 
 import akka.actor.{ActorRef, ActorRefFactory}
-import com.ovoenergy.serialization.kafka.client.model.Event
 import com.typesafe.config.Config
 import org.apache.kafka.clients.producer.Producer
 
-trait KafkaProducer {
+trait KafkaProducer[K, V] {
 
   protected def producer: ActorRef
 
-  def produce(event: Event): Unit = producer ! event
+  def produce(event: Event[K, V]): Unit = producer ! event
 
 }
 
 object KafkaProducer {
 
-  def apply(config: Config)(implicit system: ActorRefFactory): KafkaProducer = new KafkaProducer {
+  def apply[K, V](config: Config)(implicit system: ActorRefFactory): KafkaProducer[K, V] = new KafkaProducer[K, V] {
     override protected val producer: ActorRef = KafkaProducerClient(config)
   }
 
-  def apply(config: ProducerConfig, jProducer: Producer[Event.Key, Event.Envelope])(implicit system: ActorRefFactory): KafkaProducer = new KafkaProducer {
+  def apply[K, V](config: ProducerConfig, jProducer: Producer[K, V])(implicit system: ActorRefFactory): KafkaProducer[K, V] = new KafkaProducer[K, V] {
     override protected val producer: ActorRef = KafkaProducerClient(config, jProducer)
   }
 

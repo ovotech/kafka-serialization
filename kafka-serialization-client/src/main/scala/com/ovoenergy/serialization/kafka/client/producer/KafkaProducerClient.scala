@@ -1,8 +1,6 @@
 package com.ovoenergy.serialization.kafka.client.producer
 
 import akka.actor.{Actor, ActorRef, ActorRefFactory, Cancellable, Props}
-import com.ovoenergy.serialization.kafka.client.model.Event
-import com.ovoenergy.serialization.kafka.client.model.Event.{Envelope, Key}
 import com.ovoenergy.serialization.kafka.client.producer.KafkaProducerClient.Protocol
 import com.ovoenergy.serialization.kafka.client.producer.Producers._
 import com.ovoenergy.serialization.kafka.client.util.ConfigUtils._
@@ -16,15 +14,15 @@ import scala.util.control.NonFatal
 /**
   * A lightweight, non-blocking wrapper around the Apache Kafka Producer class.
   */
-private[producer] final class KafkaProducerClient(config: ProducerConfig, producerFactory: () => Producer[Key, Envelope]) extends Actor {
+private[producer] final class KafkaProducerClient[K, V](config: ProducerConfig, producerFactory: () => Producer[K, V]) extends Actor {
 
   private implicit val ec = context.system.dispatchers.lookup("kafka.producer.dispatcher")
 
   private implicit val log = context.system.log
 
-  private val eventQueue = mutable.Queue.empty[Event]
+  private val eventQueue = mutable.Queue.empty[Event[K, V]]
 
-  private var producer: Producer[Key, Envelope] = _
+  private var producer: Producer[K, V] = _
 
   private var sendEventsJob: Cancellable = _
 
@@ -43,15 +41,15 @@ private[producer] final class KafkaProducerClient(config: ProducerConfig, produc
 
   override def receive: Receive = {
     case Protocol.SendEvents =>
-      eventQueue.dequeueAll(_ => true) foreach { case event@Event(topic, message) =>
+      eventQueue.dequeueAll(_ => true) foreach { case event@Event(topic, key, value) =>
         Future {
-          producer.send(new ProducerRecord(topic, message.key, message.value)).get()
+          producer.send(new ProducerRecord(topic, key, value)).get()
         } onFailure { case NonFatal(thrown) =>
-          log.error(thrown, s"Publishing [$message] to [$topic] failed!")
+          log.error(thrown, s"Publishing [${(key, value)}] to [$topic] failed!")
           self ! event
         }
       }
-    case event: Event => eventQueue.enqueue(event)
+    case event: Event[_, _] => eventQueue.enqueue(event.asInstanceOf[Event[K, V]])
   }
 
   override def postStop(): Unit = {
@@ -70,10 +68,10 @@ object KafkaProducerClient {
 
   }
 
-  def apply(config: Config)(implicit factory: ActorRefFactory): ActorRef =
-    apply(ProducerConfig(config), new jKafkaProducer[Key, Envelope](propertiesFrom(config.getConfig("kafka.producer.properties"))))
+  def apply[K, V](config: Config)(implicit factory: ActorRefFactory): ActorRef =
+    apply(ProducerConfig(config), new jKafkaProducer[K, V](propertiesFrom(config.getConfig("kafka.producer.properties"))))
 
-  def apply(config: ProducerConfig, producer: Producer[Key, Envelope])(implicit factory: ActorRefFactory): ActorRef =
+  def apply[K, V](config: ProducerConfig, producer: Producer[K, V])(implicit factory: ActorRefFactory): ActorRef =
     factory.actorOf(Props(new KafkaProducerClient(config, () => producer)), config.producerName)
 
 }

@@ -8,7 +8,7 @@ import scala.concurrent.duration.FiniteDuration
 
 private[consumer] case class ConsumerConfig(initialDelay: FiniteDuration,
                                             interval: FiniteDuration,
-                                            topic: String,
+                                            topics: Seq[String],
                                             clientId: String,
                                             gropuId: String,
                                             pollingTimeout: Long,
@@ -17,14 +17,14 @@ private[consumer] case class ConsumerConfig(initialDelay: FiniteDuration,
 
 object ConsumerConfig extends DurationUtils {
 
-  def apply(config: Config, topic: String, clientId: String): ConsumerConfig = {
+  def apply(config: Config, clientId: String, topics: String*): ConsumerConfig = {
     val initialDelay = getFiniteDuration(config.getString("kafka.consumer.initialDelay"))
     val interval = getFiniteDuration(config.getString("kafka.consumer.interval"))
     val groupId = config.getString("kafka.consumer.properties.group.id")
     val pollingTimeout = config.getLong("kafka.consumer.pollingTimeoutMs")
-    val consumerName = s"$groupId.$clientId.$topic"
+    val consumerName = s"$groupId.$clientId.${topics.mkString(".")}"
     val askTimeout = new Timeout(getFiniteDuration(config.getString("kafka.consumer.askTimeout")))
-    ConsumerConfig(initialDelay, interval, topic, clientId, groupId, pollingTimeout, consumerName, askTimeout)
+    ConsumerConfig(initialDelay, interval, topics, clientId, groupId, pollingTimeout, consumerName, askTimeout)
   }
 
 }

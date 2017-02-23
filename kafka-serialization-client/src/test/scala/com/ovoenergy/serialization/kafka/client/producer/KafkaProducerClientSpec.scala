@@ -1,9 +1,9 @@
 package com.ovoenergy.serialization.kafka.client.producer
 
 import com.ovoenergy.serialization.kafka.client.ActorSpecContext
-import com.ovoenergy.serialization.kafka.client.model.Event
 import com.ovoenergy.serialization.kafka.client.util.DurationUtils
 import org.apache.kafka.clients.producer.MockProducer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.specs2.mutable.Specification
 
@@ -12,9 +12,8 @@ import scala.collection.JavaConverters._
 class KafkaProducerClientSpec extends Specification with ScalaFutures with PatienceConfiguration with DurationUtils {
 
   trait EventProducerContext extends ActorSpecContext {
-    val toSend: Event = Event.of("topic", Event.Key("TestEvent", None), Event.Envelope("test-event-1", None, "Test"))
-    val mockProducer = new MockProducer[Event.Key, Event.Envelope](false, null, null)
-    // todo
+    val toSend = Event("topic", "key", "vale")
+    val mockProducer = new MockProducer[String, String](false, new StringSerializer, new StringSerializer)
     val initialDelay = getFiniteDuration("500 milliseconds")
     val interval = initialDelay
 
@@ -34,8 +33,8 @@ class KafkaProducerClientSpec extends Specification with ScalaFutures with Patie
         val history = mockProducer.history().asScala
         history must not be empty
         val record = history.head
-        record.key() must_== toSend.message.key
-        record.value() must_== toSend.message.value
+        record.key() must_== toSend.key
+        record.value() must_== toSend.value
       }
     }
 

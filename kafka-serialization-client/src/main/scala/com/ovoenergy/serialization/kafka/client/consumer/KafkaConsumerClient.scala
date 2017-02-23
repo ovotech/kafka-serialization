@@ -5,31 +5,28 @@ import akka.pattern._
 import com.ovoenergy.serialization.kafka.client.consumer.Consumers._
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol.Subscribe
-import com.ovoenergy.serialization.kafka.client.model.Event
-import com.ovoenergy.serialization.kafka.client.model.Event.{Envelope, Key}
+import com.ovoenergy.serialization.kafka.client.producer.Event
 import com.ovoenergy.serialization.kafka.client.util.ConfigUtils._
-import com.ovoenergy.serialization.kafka.client.util.KafkaUtils
 import com.typesafe.config.Config
 import org.apache.kafka.clients.consumer.{Consumer, ConsumerRecords, KafkaConsumer => JavaKafkaConsumer}
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
-import scala.util.Try
 
 /**
   * A lightweight, non-blocking wrapper around the Apache Kafka Consumer class.
   *
   * The client does not handle errors.
   */
-private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consumerFactory: () => Consumer[Try[Key], Try[Envelope]]) extends Actor with KafkaUtils {
+private[consumer] final class KafkaConsumerClient[K, V](config: ConsumerConfig, consumerFactory: () => Consumer[K, V]) extends Actor {
 
   private implicit val log = context.system.log
 
   private implicit val ec = context.system.dispatchers.lookup("kafka.consumer.dispatcher")
 
-  private var consumer: Consumer[Try[Key], Try[Envelope]] = _
+  private var consumer: Consumer[K, V] = _
 
-  private var subscriber: Option[Subscribe] = None
+  private var subscriber: Option[Subscribe[K, V]] = None
 
   private var pollJob: Cancellable = _
 
@@ -57,7 +54,7 @@ private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consum
     case _: Protocol.Poll =>
   }
 
-  private def consuming(records: ConsumerRecords[Try[Key], Try[Envelope]]): Receive = {
+  private def consuming(records: ConsumerRecords[K, V]): Receive = {
     feedSubscribers(records, subscriber.toSeq).pipeTo(self)
     subscribing orElse failing orElse {
       case _: Protocol.Poll =>
@@ -78,8 +75,8 @@ private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consum
   }
 
   private def subscribing: Receive = {
-    case sub: Protocol.Subscribe =>
-      consumer.subscribe(Seq(config.topic, requeuedTopic(config.gropuId, config.clientId)))
+    case sub: Protocol.Subscribe[K, V] =>
+      consumer.subscribe(config.topics)
       subscriber = Some(sub)
       sender() ! Protocol.Done
     case Protocol.GetSubscriber => sender() ! subscriber
@@ -95,11 +92,11 @@ private[consumer] final class KafkaConsumerClient(config: ConsumerConfig, consum
 
 object KafkaConsumerClient {
 
-  type Subscriber = PartialFunction[Try[Event], Future[Unit]]
+  type Subscriber[K, V] = PartialFunction[Event[K, V], Future[Unit]]
 
   object Protocol {
 
-    case class Subscribe(value: Subscriber)
+    case class Subscribe[K, V](value: Subscriber[K, V])
 
     case class Poll(timeout: Long)
 
@@ -109,12 +106,12 @@ object KafkaConsumerClient {
 
   }
 
-  def apply(config: Config, topic: String, clientId: String)(implicit system: ActorRefFactory): ActorRef = {
+  def apply[K, V](config: Config, clientId: String, topics: String*)(implicit system: ActorRefFactory): ActorRef = {
     val consumerProperties = propertiesFrom(config.getConfig("kafka.consumer.properties"))
-    apply(ConsumerConfig(config, topic, clientId), () => new JavaKafkaConsumer[Try[Key], Try[Envelope]](consumerProperties))
+    apply(ConsumerConfig(config, clientId, topics: _*), () => new JavaKafkaConsumer[K, V](consumerProperties))
   }
 
-  def apply(config: ConsumerConfig, consumer: () => Consumer[Try[Key], Try[Envelope]])(implicit system: ActorRefFactory): ActorRef =
+  def apply[K, V](config: ConsumerConfig, consumer: () => Consumer[K, V])(implicit system: ActorRefFactory): ActorRef =
     system.actorOf(Props(new KafkaConsumerClient(config, consumer)), config.consumerName)
 
 }

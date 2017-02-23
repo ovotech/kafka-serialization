@@ -32,13 +32,13 @@ class ConsumerConfigSpec extends WordSpec with ScalaFutures with PatienceConfigu
          |    }
          |  }
          |}
-       """.stripMargin), topic, clientId)
+       """.stripMargin), clientId, topic)
   }
 
   "ConsumerConfigSpec" should {
 
     "parse consumer config" in new ConsumerConfigSpecContext {
-      config === ConsumerConfig(getFiniteDuration(initialDelay), getFiniteDuration(interval), topic, clientId, groupId, pollingTimeout, name, Timeout(5, TimeUnit.SECONDS))
+      config === ConsumerConfig(getFiniteDuration(initialDelay), getFiniteDuration(interval), Seq(topic), clientId, groupId, pollingTimeout, name, Timeout(5, TimeUnit.SECONDS))
     }
 
   }

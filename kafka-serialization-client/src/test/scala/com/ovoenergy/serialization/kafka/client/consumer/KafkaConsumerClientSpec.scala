@@ -4,7 +4,6 @@ import java.util
 
 import com.ovoenergy.serialization.kafka.client.ActorSpecContext
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Subscriber
-import com.ovoenergy.serialization.kafka.client.model.Event.{Envelope, Key}
 import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
@@ -14,20 +13,19 @@ import org.specs2.mutable.Specification
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
-import scala.util.{Success, Try}
 
 class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutures with PatienceConfiguration {
 
   "KafkaConsumerClientSpec" should {
 
-    "subscribe to topics" in new KafkaConsumerClientSpecContext {
+    "subscribe to topic" in new KafkaConsumerClientSpecContext {
       consumer.poll(pollingTimeout) returns ConsumerRecords.empty()
 
-      val client = consumerClient("test1", "subscribe-to-topic", "subscribe-client-id")
+      val client = consumerClient("test1", "subscribe-client-id", "subscribe-to-topic")
       client.subscribe(success).futureValue
 
       eventually {
-        there was one(consumer).subscribe(Seq("subscribe-to-topic", "group.id.subscribe-client-id.requeued"))
+        there was one(consumer).subscribe(Seq("subscribe-to-topic"))
       }
     }
 
@@ -119,32 +117,32 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
   }
 
   trait KafkaConsumerClientSpecContext extends ActorSpecContext {
-    val consumer = mock[Consumer[Try[Key], Try[Envelope]]]
+    val consumer = mock[Consumer[String, String]]
     val pollingTimeout = 1000L
 
-    def record(topic: String) = new ConsumerRecord[Try[Key], Try[Envelope]](topic, 0, 0L, Success(Key("eventType", None)), Success(Envelope("eventId", None, "{}")))
+    def record(topic: String) = new ConsumerRecord[String, String](topic, 0, 0L, "key", "value")
 
-    def records(values: ConsumerRecord[Try[Key], Try[Envelope]]*): ConsumerRecords[Try[Key], Try[Envelope]] = {
-      new ConsumerRecords[Try[Key], Try[Envelope]](values.groupBy(_.topic()).map { case (topic, list) =>
+    def records(values: ConsumerRecord[String, String]*): ConsumerRecords[String, String] = {
+      new ConsumerRecords[String, String](values.groupBy(_.topic()).map { case (topic, list) =>
         new TopicPartition(topic, 0) -> util.Arrays.asList(list: _*)
       })
     }
 
-    val success: Subscriber = {
+    val success: Subscriber[String, String] = {
       case _ => Future.successful((): Unit)
     }
 
-    val failure: Subscriber = {
+    val failure: Subscriber[String, String] = {
       case _ => Future.failed(new RuntimeException)
     }
 
-    val naughtySubscriber: Subscriber = {
+    val naughtySubscriber: Subscriber[String, String] = {
       case _ => throw new RuntimeException
     }
 
-    def consumerClient(consumerName: String, topic: String, clientId: String): KafkaConsumer = KafkaConsumer(config(consumerName, topic, clientId), () => consumer)
+    def consumerClient(consumerName: String, clientId: String, topic: String): KafkaConsumer[String, String] = KafkaConsumer(config(consumerName, clientId, topic), () => consumer)
 
-    def config(consumerName: String, topic: String, clientId: String) = ConsumerConfig(ConfigFactory.parseString(
+    def config(consumerName: String, clientId: String, topic: String) = ConsumerConfig(ConfigFactory.parseString(
       s"""
          |kafka {
          |  consumer {
@@ -158,7 +156,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
          |    }
          |  }
          |}
-       """.stripMargin), topic, clientId)
+       """.stripMargin), clientId, topic)
   }
 
 }

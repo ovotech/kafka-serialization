@@ -3,8 +3,7 @@ package com.ovoenergy.serialization.kafka.client.consumer
 import akka.event.LoggingAdapter
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol.Subscribe
-import com.ovoenergy.serialization.kafka.client.model.Event
-import com.ovoenergy.serialization.kafka.client.model.Event._
+import com.ovoenergy.serialization.kafka.client.producer.Event
 import org.apache.kafka.clients.consumer._
 
 import scala.collection.JavaConversions._
@@ -20,10 +19,10 @@ private[consumer] trait Consumers {
     * @param records     records to consume
     * @param subscribers subscribers to feed
     */
-  def feedSubscribers(records: ConsumerRecords[Try[Key], Try[Envelope]], subscribers: Seq[Subscribe])(implicit ec: ExecutionContext): Future[Protocol.Done.type] = Future.sequence {
+  def feedSubscribers[K, V](records: ConsumerRecords[K, V], subscribers: Seq[Subscribe[K, V]])(implicit ec: ExecutionContext): Future[Protocol.Done.type] = Future.sequence {
     for {
       record <- records
-      event = recordToEvent(record)
+      event = Event(record.topic(), record.key(), record.value())
       subscriber <- subscribers if subscriber.value.isDefinedAt(event)
     } yield {
       Try(subscriber.value(event)) match {
@@ -33,12 +32,6 @@ private[consumer] trait Consumers {
     }
   } map { _ =>
     Protocol.Done
-  }
-
-  private def recordToEvent(record: ConsumerRecord[Try[Key], Try[Envelope]]): Try[Event] = (record.key, record.value) match {
-    case (Success(k), Success(v)) => Success(Event(record.topic(), Message(k, v)))
-    case (Failure(ex), _) => Failure(ex)
-    case (_, Failure(ex)) => Failure(ex)
   }
 
 }
