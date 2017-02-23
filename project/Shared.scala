@@ -6,6 +6,7 @@ import sbt.{Resolver, ScmInfo, url, _}
 object Shared {
 
   lazy val settings = Seq(
+    fork in Test := true,
     organization := "com.ovoenergy",
     organizationHomepage := Some(url("https://www.ovoenergy.com/")),
     homepage := Some(url("https://github.com/ovotech/kafka-serialization")),
