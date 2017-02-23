@@ -146,7 +146,6 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
       s"""
          |kafka {
          |  consumer {
-         |    name = "$consumerName"
          |    initialDelay = "500 milliseconds"
          |    interval = "500 milliseconds"
          |    pollingTimeoutMs = $pollingTimeout
@@ -156,7 +155,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
          |    }
          |  }
          |}
-       """.stripMargin), clientId, topic)
+       """.stripMargin), consumerName, clientId, topic)
   }
 
 }

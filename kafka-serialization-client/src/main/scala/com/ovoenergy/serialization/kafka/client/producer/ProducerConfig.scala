@@ -9,10 +9,9 @@ private[producer] case class ProducerConfig(initialDelay: FiniteDuration, interv
 
 object ProducerConfig extends DurationUtils {
 
-  def apply(config: Config): ProducerConfig = {
+  def apply(config: Config, producerName: String): ProducerConfig = {
     val initialDelay = getFiniteDuration(config.getString("kafka.producer.initialDelay"))
     val interval = getFiniteDuration(config.getString("kafka.producer.interval"))
-    val producerName = config.getString("kafka.producer.name")
     ProducerConfig(initialDelay, interval, producerName)
   }
 

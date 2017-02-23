@@ -7,6 +7,7 @@ object Shared {
 
   lazy val settings = Seq(
     fork in Test := true,
+    fork in IntegrationTest := true,
     organization := "com.ovoenergy",
     organizationHomepage := Some(url("https://www.ovoenergy.com/")),
     homepage := Some(url("https://github.com/ovotech/kafka-serialization")),

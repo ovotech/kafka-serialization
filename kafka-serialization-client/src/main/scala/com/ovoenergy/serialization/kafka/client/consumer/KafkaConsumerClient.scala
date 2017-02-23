@@ -106,9 +106,9 @@ object KafkaConsumerClient {
 
   }
 
-  def apply[K, V](config: Config, clientId: String, topics: String*)(implicit system: ActorRefFactory): ActorRef = {
+  def apply[K, V](config: Config, consumerName: String, clientId: String, topics: String*)(implicit system: ActorRefFactory): ActorRef = {
     val consumerProperties = propertiesFrom(config.getConfig("kafka.consumer.properties"))
-    apply(ConsumerConfig(config, clientId, topics: _*), () => new JavaKafkaConsumer[K, V](consumerProperties))
+    apply(ConsumerConfig(config, consumerName, clientId, topics: _*), () => new JavaKafkaConsumer[K, V](consumerProperties))
   }
 
   def apply[K, V](config: ConsumerConfig, consumer: () => Consumer[K, V])(implicit system: ActorRefFactory): ActorRef =

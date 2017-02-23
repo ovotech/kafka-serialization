@@ -68,8 +68,8 @@ object KafkaProducerClient {
 
   }
 
-  def apply[K, V](config: Config)(implicit factory: ActorRefFactory): ActorRef =
-    apply(ProducerConfig(config), new jKafkaProducer[K, V](propertiesFrom(config.getConfig("kafka.producer.properties"))))
+  def apply[K, V](config: Config, producerName: String)(implicit factory: ActorRefFactory): ActorRef =
+    apply(ProducerConfig(config, producerName), new jKafkaProducer[K, V](propertiesFrom(config.getConfig("kafka.producer.properties"))))
 
   def apply[K, V](config: ProducerConfig, producer: Producer[K, V])(implicit factory: ActorRefFactory): ActorRef =
     factory.actorOf(Props(new KafkaProducerClient(config, () => producer)), config.producerName)

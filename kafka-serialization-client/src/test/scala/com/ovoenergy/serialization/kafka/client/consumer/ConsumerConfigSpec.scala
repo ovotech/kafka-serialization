@@ -32,7 +32,7 @@ class ConsumerConfigSpec extends WordSpec with ScalaFutures with PatienceConfigu
          |    }
          |  }
          |}
-       """.stripMargin), clientId, topic)
+       """.stripMargin), name, clientId, topic)
   }
 
   "ConsumerConfigSpec" should {

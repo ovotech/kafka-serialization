@@ -1,6 +1,6 @@
 package com.ovoenergy.serialization.kafka.client.consumer
 
-import akka.actor.{ActorRef, ActorRefFactory}
+import akka.actor.{ActorRef, ActorRefFactory, PoisonPill}
 import akka.pattern._
 import akka.util.Timeout
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol.{Done, GetSubscriber, Subscribe}
@@ -23,12 +23,18 @@ trait KafkaConsumer[K, V] {
   def subscriber: Future[Option[Subscribe[K, V]]] =
     (consumer ? GetSubscriber).mapTo[Option[Subscribe[K, V]]]
 
+  /**
+    * Stops the consumer. After having shut down, this consumer cannot be used again.
+    * Any message consumed after having shut down will not be feed to subscriber.
+    */
+  def stop(): Unit = consumer ! PoisonPill
+
 }
 
 object KafkaConsumer extends DurationUtils {
 
-  def apply[K, V](config: Config, clientId: String, topics: String*)(implicit system: ActorRefFactory): KafkaConsumer[K, V] = new KafkaConsumer[K, V] {
-    override protected val consumer = KafkaConsumerClient(config, clientId, topics: _*)
+  def apply[K, V](config: Config, consumerName: String, clientId: String, topics: String*)(implicit system: ActorRefFactory): KafkaConsumer[K, V] = new KafkaConsumer[K, V] {
+    override protected val consumer = KafkaConsumerClient(config, consumerName, clientId, topics: _*)
 
     override protected implicit def askTimeout: Timeout = getFiniteDuration(config.getString("kafka.consumer.askTimeout"))
   }
