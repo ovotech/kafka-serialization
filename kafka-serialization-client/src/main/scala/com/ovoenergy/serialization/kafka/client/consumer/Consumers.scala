@@ -22,7 +22,7 @@ private[consumer] trait Consumers {
   def feedSubscribers[K, V](records: ConsumerRecords[K, V], subscribers: Seq[Subscribe[K, V]])(implicit ec: ExecutionContext): Future[Protocol.Done.type] = Future.sequence {
     for {
       record <- records
-      event = Event(record.topic(), record.key(), record.value())
+      event = Event(Topic(record.topic()), record.key(), record.value())
       subscriber <- subscribers if subscriber.value.isDefinedAt(event)
     } yield {
       Try(subscriber.value(event)) match {

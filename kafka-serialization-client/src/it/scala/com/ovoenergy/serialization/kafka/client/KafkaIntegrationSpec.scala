@@ -3,19 +3,18 @@ package com.ovoenergy.serialization.kafka.client
 import java.util.UUID
 
 import akka.actor.ActorSystem
-import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumer
-import com.ovoenergy.serialization.kafka.client.producer.{Event, KafkaProducer}
+import com.ovoenergy.serialization.kafka.client.consumer.{ClientId, ConsumerName, KafkaConsumer, Topic}
+import com.ovoenergy.serialization.kafka.client.producer.{Event, KafkaProducer, ProducerName}
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Future, Promise}
 
 /**
   * Created by Piotr Fras on 23/02/17.
   */
-class KafkaIntegrationSpec extends WordSpec with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures with IntegrationPatience with Matchers {
+class KafkaIntegrationSpec extends WordSpec with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures with IntegrationPatience with Matchers with Eventually {
 
   "start consumer, producer and consume message" in {
     val producerEvent = Event(topic, "key", "value")
@@ -31,14 +30,36 @@ class KafkaIntegrationSpec extends WordSpec with BeforeAndAfterEach with BeforeA
 
     producer.produce(producerEvent)
 
-    val consumerEvent = Await.result(promise.future, Duration.Inf)
-
     whenReady(promise.future) { consumerEvent =>
       consumerEvent shouldBe producerEvent
     }
   }
 
-  var topic: String = _
+  "restart consumer if subscriber fails" in {
+    val eventToSend = Event(topic, "key", "value")
+
+    val promise = Promise[Event[String, String]]()
+
+    @volatile var success = false
+
+    consumer.subscribe { case _ =>
+      if (success) {
+        Future.successful(())
+      } else {
+        success = true
+        Future.failed(new RuntimeException("???"))
+      }
+    }.futureValue
+
+    producer.produce(eventToSend)
+
+    eventually {
+      success shouldBe true
+    }
+
+  }
+
+  var topic: Topic = _
 
   implicit val actorSystem = ActorSystem("integration")
 
@@ -49,9 +70,9 @@ class KafkaIntegrationSpec extends WordSpec with BeforeAndAfterEach with BeforeA
   var producer: KafkaProducer[String, String] = _
 
   override protected def beforeEach(): Unit = {
-    topic = UUID.randomUUID().toString
-    consumer = KafkaConsumer[String, String](config, "kafka.integration.consumer", topic)
-    producer = KafkaProducer[String, String](config, "kafka.integration.producer")
+    topic = Topic(randomUUIDString)
+    consumer = KafkaConsumer[String, String](config, ConsumerName(randomUUIDString), ClientId("kafka.integration"), topic)
+    producer = KafkaProducer[String, String](config, ProducerName(randomUUIDString))
   }
 
   override protected def afterEach(): Unit = {
@@ -60,4 +81,6 @@ class KafkaIntegrationSpec extends WordSpec with BeforeAndAfterEach with BeforeA
   }
 
   override protected def afterAll(): Unit = actorSystem.terminate().futureValue
+
+  private def randomUUIDString = UUID.randomUUID().toString
 }

@@ -20,7 +20,7 @@ trait KafkaProducer[K, V] {
 
 object KafkaProducer {
 
-  def apply[K, V](config: Config, producerName: String)(implicit system: ActorRefFactory): KafkaProducer[K, V] = new KafkaProducer[K, V] {
+  def apply[K, V](config: Config, producerName: ProducerName)(implicit system: ActorRefFactory): KafkaProducer[K, V] = new KafkaProducer[K, V] {
     override protected val producer: ActorRef = KafkaProducerClient(config, producerName)
   }
 

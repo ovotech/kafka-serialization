@@ -43,7 +43,7 @@ private[producer] final class KafkaProducerClient[K, V](config: ProducerConfig, 
     case Protocol.SendEvents =>
       eventQueue.dequeueAll(_ => true) foreach { case event@Event(topic, key, value) =>
         Future {
-          producer.send(new ProducerRecord(topic, key, value)).get()
+          producer.send(new ProducerRecord(topic.value, key, value)).get()
         } onFailure { case NonFatal(thrown) =>
           log.error(thrown, s"Publishing [${(key, value)}] to [$topic] failed!")
           self ! event
@@ -68,10 +68,10 @@ object KafkaProducerClient {
 
   }
 
-  def apply[K, V](config: Config, producerName: String)(implicit factory: ActorRefFactory): ActorRef =
+  def apply[K, V](config: Config, producerName: ProducerName)(implicit factory: ActorRefFactory): ActorRef =
     apply(ProducerConfig(config, producerName), new jKafkaProducer[K, V](propertiesFrom(config.getConfig("kafka.producer.properties"))))
 
   def apply[K, V](config: ProducerConfig, producer: Producer[K, V])(implicit factory: ActorRefFactory): ActorRef =
-    factory.actorOf(Props(new KafkaProducerClient(config, () => producer)), config.producerName)
+    factory.actorOf(Props(new KafkaProducerClient(config, () => producer)), config.producerName.value)
 
 }

@@ -1,6 +1,7 @@
 package com.ovoenergy.serialization.kafka.client.producer
 
 import com.ovoenergy.serialization.kafka.client.ActorSpecContext
+import com.ovoenergy.serialization.kafka.client.consumer.Topic
 import com.ovoenergy.serialization.kafka.client.util.DurationUtils
 import org.apache.kafka.clients.producer.MockProducer
 import org.apache.kafka.common.serialization.StringSerializer
@@ -12,12 +13,12 @@ import scala.collection.JavaConverters._
 class KafkaProducerClientSpec extends Specification with ScalaFutures with PatienceConfiguration with DurationUtils {
 
   trait EventProducerContext extends ActorSpecContext {
-    val toSend = Event("topic", "key", "vale")
+    val toSend = Event(Topic("topic"), "key", "vale")
     val mockProducer = new MockProducer[String, String](false, new StringSerializer, new StringSerializer)
     val initialDelay = getFiniteDuration("500 milliseconds")
     val interval = initialDelay
 
-    def producerClient(id: String) = KafkaProducer(ProducerConfig(initialDelay, interval, id), mockProducer)
+    def producerClient(producerName: ProducerName) = KafkaProducer(ProducerConfig(initialDelay, interval, producerName), mockProducer)
   }
 
   sequential
@@ -25,7 +26,7 @@ class KafkaProducerClientSpec extends Specification with ScalaFutures with Patie
   "EventProducerSpec" should {
 
     "start actor and accept events" in new EventProducerContext {
-      val producer = producerClient("test-1")
+      val producer = producerClient(ProducerName("test-1"))
       producer.produce(toSend)
 
       eventually {
@@ -39,7 +40,7 @@ class KafkaProducerClientSpec extends Specification with ScalaFutures with Patie
     }
 
     "recover from failure" in new EventProducerContext {
-      val producer = producerClient("test-2")
+      val producer = producerClient(ProducerName("test-2"))
       producer.produce(toSend)
 
       eventually {
