@@ -1,0 +1,20 @@
+version: '2'
+services:
+
+  zookeeper:
+    image: 'wurstmeister/zookeeper'
+    container_name: 'zookeeper'
+    restart: 'always'
+
+  kafka:
+    image: 'wurstmeister/kafka:0.10.1.0'
+    restart: 'always'
+    environment:
+      HOSTNAME_COMMAND: "route -n | awk '/UG[ \t]/{print $$2}'"
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_PORT: '9092'
+    container_name: 'kafka'
+    ports:
+      - '9092:9092'
+    depends_on:
+      - 'zookeeper'
