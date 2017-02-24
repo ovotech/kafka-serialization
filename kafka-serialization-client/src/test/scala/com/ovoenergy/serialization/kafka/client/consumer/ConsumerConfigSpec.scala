@@ -15,10 +15,10 @@ class ConsumerConfigSpec extends WordSpec with ScalaFutures with PatienceConfigu
     val initialDelay = "500 milliseconds"
     val interval = initialDelay
     val askTimeout = "5 seconds"
-    val topic = "topic"
-    val clientId = "clientId"
+    val topic = Topic("topic")
+    val clientId = ClientId("clientId")
     val groupId = "groupId"
-    val name = s"$groupId.$clientId.$topic"
+    val name = ConsumerName(s"$groupId.$clientId.$topic")
     val config = ConsumerConfig(ConfigFactory.parseString(
       s"""
          |kafka {
@@ -38,7 +38,7 @@ class ConsumerConfigSpec extends WordSpec with ScalaFutures with PatienceConfigu
   "ConsumerConfigSpec" should {
 
     "parse consumer config" in new ConsumerConfigSpecContext {
-      config === ConsumerConfig(getFiniteDuration(initialDelay), getFiniteDuration(interval), Seq(topic), clientId, groupId, pollingTimeout, name, Timeout(5, TimeUnit.SECONDS))
+      config === ConsumerConfig(getFiniteDuration(initialDelay), getFiniteDuration(interval), Seq(topic), clientId, GroupId(groupId), pollingTimeout, name, Timeout(5, TimeUnit.SECONDS))
     }
 
   }

@@ -33,7 +33,7 @@ trait KafkaConsumer[K, V] {
 
 object KafkaConsumer extends DurationUtils {
 
-  def apply[K, V](config: Config, consumerName: String, clientId: String, topics: String*)(implicit system: ActorRefFactory): KafkaConsumer[K, V] = new KafkaConsumer[K, V] {
+  def apply[K, V](config: Config, consumerName: ConsumerName, clientId: ClientId, topics: Topic*)(implicit system: ActorRefFactory): KafkaConsumer[K, V] = new KafkaConsumer[K, V] {
     override protected val consumer = KafkaConsumerClient(config, consumerName, clientId, topics: _*)
 
     override protected implicit def askTimeout: Timeout = getFiniteDuration(config.getString("kafka.consumer.askTimeout"))

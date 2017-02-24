@@ -21,7 +21,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
     "subscribe to topic" in new KafkaConsumerClientSpecContext {
       consumer.poll(pollingTimeout) returns ConsumerRecords.empty()
 
-      val client = consumerClient("test1", "subscribe-client-id", "subscribe-to-topic")
+      val client = consumerClient(ConsumerName("test1"), ClientId("subscribe-client-id"), Topic("subscribe-to-topic"))
       client.subscribe(success).futureValue
 
       eventually {
@@ -32,7 +32,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
     "poll for messages" in new KafkaConsumerClientSpecContext {
       consumer.poll(pollingTimeout) returns ConsumerRecords.empty()
 
-      val client = consumerClient("test2", "poll-for-message-topic", "poll-for-message-client-id")
+      val client = consumerClient(ConsumerName("test2"), ClientId("poll-for-message-client-id"), Topic("poll-for-message-topic"))
       client.subscribe(success).futureValue
 
       eventually {
@@ -43,7 +43,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
     "let subscribers subscribe to configured topic" in new KafkaConsumerClientSpecContext {
       consumer.poll(pollingTimeout) returns ConsumerRecords.empty()
 
-      val client = consumerClient("test3", "topic", "clientId")
+      val client = consumerClient(ConsumerName("test3"), ClientId("clientId"), Topic("topic"))
 
       client.subscribe(success).futureValue
 
@@ -56,7 +56,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
     "recycle existing subscriber if restarted" in new KafkaConsumerClientSpecContext {
       consumer.poll(pollingTimeout) returns records(record("recycle-topic-1"))
 
-      val client = consumerClient("test4", "recycle-topic-1", "recycle-client-id-1")
+      val client = consumerClient(ConsumerName("test4"), ClientId("recycle-client-id-1"), Topic("recycle-topic-1"))
 
       client.subscribe(naughtySubscriber).futureValue
 
@@ -83,7 +83,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
     "commit offset if subscriber consumed message" in new KafkaConsumerClientSpecContext {
       consumer.poll(pollingTimeout) returns records(record("commit-topic-1"))
 
-      val client = consumerClient("test6", "commit-topic-1", "commit-client-id")
+      val client = consumerClient(ConsumerName("test6"), ClientId("commit-client-id"), Topic("commit-topic-1"))
 
       client.subscribe(success).futureValue
 
@@ -100,7 +100,7 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
     "restart offset if subscriber failed" in new KafkaConsumerClientSpecContext {
       consumer.poll(pollingTimeout) returns records(record("restart-topic-1"))
 
-      val client = consumerClient("test7", "restart-topic-1", "restart-client-id")
+      val client = consumerClient(ConsumerName("test7"), ClientId("restart-client-id"), Topic("restart-topic-1"))
 
       client.subscribe(naughtySubscriber).futureValue
 
@@ -140,9 +140,9 @@ class KafkaConsumerClientSpec extends Specification with Mockito with ScalaFutur
       case _ => throw new RuntimeException
     }
 
-    def consumerClient(consumerName: String, clientId: String, topic: String): KafkaConsumer[String, String] = KafkaConsumer(config(consumerName, clientId, topic), () => consumer)
+    def consumerClient(consumerName: ConsumerName, clientId: ClientId, topic: Topic): KafkaConsumer[String, String] = KafkaConsumer(config(consumerName, clientId, topic), () => consumer)
 
-    def config(consumerName: String, clientId: String, topic: String) = ConsumerConfig(ConfigFactory.parseString(
+    def config(consumerName: ConsumerName, clientId: ClientId, topic: Topic) = ConsumerConfig(ConfigFactory.parseString(
       s"""
          |kafka {
          |  consumer {

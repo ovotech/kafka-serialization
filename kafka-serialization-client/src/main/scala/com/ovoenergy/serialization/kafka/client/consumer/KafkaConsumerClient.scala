@@ -76,7 +76,7 @@ private[consumer] final class KafkaConsumerClient[K, V](config: ConsumerConfig, 
 
   private def subscribing: Receive = {
     case sub: Protocol.Subscribe[K, V] =>
-      consumer.subscribe(config.topics)
+      consumer.subscribe(config.topics.map(_.value))
       subscriber = Some(sub)
       sender() ! Protocol.Done
     case Protocol.GetSubscriber => sender() ! subscriber
@@ -106,12 +106,12 @@ object KafkaConsumerClient {
 
   }
 
-  def apply[K, V](config: Config, consumerName: String, clientId: String, topics: String*)(implicit system: ActorRefFactory): ActorRef = {
+  def apply[K, V](config: Config, consumerName: ConsumerName, clientId: ClientId, topics: Topic*)(implicit system: ActorRefFactory): ActorRef = {
     val consumerProperties = propertiesFrom(config.getConfig("kafka.consumer.properties"))
     apply(ConsumerConfig(config, consumerName, clientId, topics: _*), () => new JavaKafkaConsumer[K, V](consumerProperties))
   }
 
   def apply[K, V](config: ConsumerConfig, consumer: () => Consumer[K, V])(implicit system: ActorRefFactory): ActorRef =
-    system.actorOf(Props(new KafkaConsumerClient(config, consumer)), config.consumerName)
+    system.actorOf(Props(new KafkaConsumerClient(config, consumer)), config.consumerName.value)
 
 }
