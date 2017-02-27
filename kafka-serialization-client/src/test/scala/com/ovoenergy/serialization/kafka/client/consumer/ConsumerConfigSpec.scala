@@ -3,6 +3,7 @@ package com.ovoenergy.serialization.kafka.client.consumer
 import java.util.concurrent.TimeUnit
 
 import akka.util.Timeout
+import com.ovoenergy.serialization.kafka.client.Topic
 import com.ovoenergy.serialization.kafka.client.util.DurationUtils
 import com.typesafe.config.ConfigFactory
 import org.scalatest.WordSpec

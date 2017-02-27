@@ -1,6 +1,6 @@
 package com.ovoenergy.serialization.kafka.client.producer
 
-import com.ovoenergy.serialization.kafka.client.consumer.Topic
+import com.ovoenergy.serialization.kafka.client.Topic
 
 /**
   * Created by Piotr Fras on 23/02/17.

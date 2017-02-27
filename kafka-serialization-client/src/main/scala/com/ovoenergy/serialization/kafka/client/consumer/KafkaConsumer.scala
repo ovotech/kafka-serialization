@@ -3,6 +3,7 @@ package com.ovoenergy.serialization.kafka.client.consumer
 import akka.actor.{ActorRef, ActorRefFactory, PoisonPill}
 import akka.pattern._
 import akka.util.Timeout
+import com.ovoenergy.serialization.kafka.client.Topic
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol.{Done, GetSubscriber, Subscribe}
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Subscriber
 import com.ovoenergy.serialization.kafka.client.util.DurationUtils

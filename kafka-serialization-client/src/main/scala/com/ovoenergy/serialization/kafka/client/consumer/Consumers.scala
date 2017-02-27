@@ -1,6 +1,7 @@
 package com.ovoenergy.serialization.kafka.client.consumer
 
 import akka.event.LoggingAdapter
+import com.ovoenergy.serialization.kafka.client.Topic
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol.Subscribe
 import com.ovoenergy.serialization.kafka.client.producer.Event

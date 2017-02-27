@@ -1,12 +1,11 @@
 package com.ovoenergy.serialization.kafka.client.consumer
 
 import akka.util.Timeout
+import com.ovoenergy.serialization.kafka.client.Topic
 import com.ovoenergy.serialization.kafka.client.util.DurationUtils
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.FiniteDuration
-
-case class Topic(value: String)
 
 case class ClientId(value: String)
 

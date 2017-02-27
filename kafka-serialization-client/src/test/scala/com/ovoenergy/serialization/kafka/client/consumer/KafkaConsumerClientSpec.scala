@@ -2,7 +2,7 @@ package com.ovoenergy.serialization.kafka.client.consumer
 
 import java.util
 
-import com.ovoenergy.serialization.kafka.client.ActorSpecContext
+import com.ovoenergy.serialization.kafka.client.{ActorSpecContext, Topic}
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Subscriber
 import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.consumer._

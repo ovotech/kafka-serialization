@@ -2,6 +2,7 @@ package com.ovoenergy.serialization.kafka.client.consumer
 
 import akka.actor.{Actor, ActorRef, ActorRefFactory, Cancellable, Props}
 import akka.pattern._
+import com.ovoenergy.serialization.kafka.client.Topic
 import com.ovoenergy.serialization.kafka.client.consumer.Consumers._
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol
 import com.ovoenergy.serialization.kafka.client.consumer.KafkaConsumerClient.Protocol.Subscribe

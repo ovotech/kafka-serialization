@@ -3,7 +3,7 @@ package com.ovoenergy.serialization.kafka.client
 import java.util.UUID
 
 import akka.actor.ActorSystem
-import com.ovoenergy.serialization.kafka.client.consumer.{ClientId, ConsumerName, KafkaConsumer, Topic}
+import com.ovoenergy.serialization.kafka.client.consumer.{ClientId, ConsumerName, KafkaConsumer}
 import com.ovoenergy.serialization.kafka.client.producer.{Event, KafkaProducer, ProducerName}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
@@ -37,8 +37,6 @@ class KafkaIntegrationSpec extends WordSpec with BeforeAndAfterEach with BeforeA
 
   "restart consumer if subscriber fails" in {
     val eventToSend = Event(topic, "key", "value")
-
-    val promise = Promise[Event[String, String]]()
 
     @volatile var success = false
 

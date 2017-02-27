@@ -1,7 +1,7 @@
 package com.ovoenergy.serialization.kafka.client.producer
 
 import com.ovoenergy.serialization.kafka.client.ActorSpecContext
-import com.ovoenergy.serialization.kafka.client.consumer.Topic
+import com.ovoenergy.serialization.kafka.client.Topic
 import com.ovoenergy.serialization.kafka.client.util.DurationUtils
 import org.apache.kafka.clients.producer.MockProducer
 import org.apache.kafka.common.serialization.StringSerializer
