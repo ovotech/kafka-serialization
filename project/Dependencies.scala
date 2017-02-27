@@ -1,10 +1,29 @@
 import sbt.Keys._
 import sbt._
+import sbt.impl.GroupArtifactID
 
 object Dependencies {
 
+  def libraryVersion(groupArtifactID: GroupArtifactID, version211: String, version212: String) = Def.setting(scalaBinaryVersion.value match {
+    case "2.11" => groupArtifactID % version211
+    case "2.12" => groupArtifactID % version212
+  })
+
+  object Akka {
+
+    private val version211 = "2.3.16"
+    private val version212 = "2.4.16"
+
+    val actor = libraryVersion("com.typesafe.akka" %% s"akka-actor", version211, version212)
+    val testKit = libraryVersion("com.typesafe.akka" %% s"akka-testkit", version211, version212)
+
+  }
+
   object Typesafe {
-    val config = "com.typesafe" % "config" % "1.3.1"
+
+    private val version = "1.3.1"
+
+    val config = "com.typesafe" % "config" % version
   }
 
   object slf4j {
@@ -18,6 +37,7 @@ object Dependencies {
   }
 
   object log4j {
+
     private val version = "2.7"
 
     val log4jToSlf4j = "org.apache.logging.log4j" % "log4j-to-slf4j" % version
@@ -31,8 +51,31 @@ object Dependencies {
     val classic = "ch.qos.logback" % "logback-classic" % version
   }
 
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.1"
-  val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.13.4"
+  object scalaTest {
+
+    private val version = "3.0.1"
+
+    val scalaTest = "org.scalatest" %% "scalatest" % version
+
+  }
+
+  object scalaCheck {
+
+    private val version = "1.13.4"
+
+    val scalaCheck = "org.scalacheck" %% "scalacheck" % version
+
+  }
+
+  object Specs2 {
+
+    private val version211 = "3.7"
+    private val version212 = "2.4.17"
+
+    val core = libraryVersion("org.specs2" %% "specs2-core", version211, version212)
+    val mock = libraryVersion("org.specs2" %% "specs2-mock", version211, version212)
+
+  }
 
   object scalaMock {
 
@@ -48,8 +91,6 @@ object Dependencies {
     val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "3.1.1" exclude("org.slf4j", "slf4j-log4j12")
     val client = "org.apache.kafka" % "kafka-clients" % version exclude("org.slf4j", "slf4j-log4j12")
   }
-
-  val dockerClient = "com.spotify" % "docker-client" % "7.0.0"
 
   object Circe {
 
@@ -71,45 +112,34 @@ object Dependencies {
 
   object Json4s {
 
-    def core(version: String) = "org.json4s" %% "json4s-core" % version
-    def native(version: String) = "org.json4s" %% "json4s-native" % version
+    private val version211 = "3.3.0"
+    private val version212 = "3.5.0"
+
+    val core = libraryVersion("org.json4s" %% "json4s-core", version211, version212)
+    val native = libraryVersion("org.json4s" %% "json4s-native", version211, version212)
+
   }
 
-  val wiremock = "com.github.tomakehurst" % "wiremock" % "2.4.1"
+  object Wiremock {
+
+    private val version = "2.4.1"
+
+    val wiremock = "com.github.tomakehurst" % "wiremock" % version
+
+  }
 
   val l = libraryDependencies
 
-  val tests = Seq(
-    Typesafe.config % Test,
-    scalaTest % Test,
-    scalaCheck % Test,
-    scalaMock.scalaTestSupport % Test,
-    logback.classic % Test,
-    wiremock % Test,
-    Circe.generic % Test
-  )
+  val core = l ++= Seq(kafka.client)
 
-  val core = l ++= Seq(
-    kafka.client
-  ) ++ tests
+  val json4s = l ++= Seq(Json4s.core.value, Json4s.native.value)
 
-  val json4s = l <++= scalaVersion { v: String =>
-    val version = if (v.startsWith("2.12")) {
-      "3.5.0"
-    }  else {
-      "3.3.0"
-    }
-    Seq(Json4s.core(version), Json4s.native(version)) ++ tests
-  }
+  val avro4s = l ++= Seq(Avro4s.core, kafka.avroSerializer)
 
-  val avro4s = l ++= Seq(
-    Avro4s.core,
-    kafka.avroSerializer
-  ) ++ tests
+  val circe = l ++= Seq(Circe.core, Circe.parser, Circe.generic % Test)
 
-  val circe = l ++= Seq(
-    Circe.core,
-    Circe.parser
-  ) ++ tests
+  val client = l ++= Seq(Akka.actor.value % Provided, Typesafe.config % Provided, Specs2.core.value % Test, Specs2.mock.value % Test)
+
+  val testkit = l ++= Seq(Akka.testKit.value, scalaTest.scalaTest, scalaCheck.scalaCheck, Typesafe.config, scalaMock.scalaTestSupport, logback.classic, Wiremock.wiremock)
 
 }

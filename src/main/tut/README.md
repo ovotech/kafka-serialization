@@ -18,10 +18,11 @@ easy to add support for other libraries.
 
 The library is composed by these modules:
 
- - Serialization: provides the serialization primitives to build serializers and deserializers.
- - Json4sSerialization: provides serializer and deserializer based on Json4s
- - CirceSerialization: provides serializer and deserializer based on Circe
- - Avro4sSerialization: provides serializer and deserializer based on Avro4s
+ - kafka-serialization-core: provides the serialization primitives to build serializers and deserializers.
+ - kafka-serialization-json4s: provides serializer and deserializer based on Json4s
+ - kafka-serialization-circe: provides serializer and deserializer based on Circe
+ - kafka-serialization-avro4s: provides serializer and deserializer based on Avro4s
+ - kafka-serialization-client: provides Scala consumer and producer based on Akka actor
 
 The Avro4s serialization support the schema evolution through the schema registry. The consumer can provide its own schema
 and Avro will take care of the conversion.
