@@ -129,14 +129,15 @@ object Serialization {
     }
   })
 
-  def formatDemultiplexerDeserializer[T](entries: (Format, KafkaDeserializer[T])*): KafkaDeserializer[T] = {
-    val entriesAsMap: Map[Format, KafkaDeserializer[T]] = entries.toMap
-
+  def formatDemultiplexerDeserializer[T](noByteFormatter: KafkaDeserializer[T])(pf: PartialFunction[Format, KafkaDeserializer[T]]): KafkaDeserializer[T] = {
     deserializer({ (topic, data) =>
-      (for {
-        format <- Format.fromByte(data(0))
-        deserializer <- entriesAsMap.get(format)
-      } yield deserializer.deserialize(topic, data)).getOrElse(throw new RuntimeException("Wrong or unsupported serialization format byte"))
+      Format.fromByte(data(0)).map { format =>
+        if (pf.isDefinedAt(format)) {
+          pf.apply(format)
+        } else {
+          noByteFormatter
+        }
+      }.getOrElse(noByteFormatter).deserialize(topic, data)
     })
   }
 
