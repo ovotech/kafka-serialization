@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 import Serialization._
 import Serialization.Implicits._
 import com.ovoenergy.serialization.kafka.testkit.UnitSpec
-import org.apache.kafka.common.serialization.{Deserializer, Serializer}
+import org.apache.kafka.common.serialization.{Deserializer, Serializer, StringSerializer}
 
 class SerializationSpec extends UnitSpec {
 
@@ -34,16 +34,23 @@ class SerializationSpec extends UnitSpec {
 
       "demultiplex the magic byte correctly" in {
 
+        val failingDeserializer = Serialization.deserializer[String]({ _: Array[Byte] => throw new RuntimeException("Wrong or unsupported serialization format byte") })
         val serializer = formatSerializer(Format.Json, stringSerializer)
-        val deserializer: Deserializer[String] = formatDemultiplexerDeserializer(
-          Format.Json -> formatDroppingDeserializer(stringDeserializer),
-          Format.AvroBinarySchemaId -> formatDroppingDeserializer({ data: Array[Byte] => new String(data.map(b => (b + 1).asInstanceOf[Byte]), UTF_8) }) // change the byte value
-        )
+        val deserializer: Deserializer[String] = formatDemultiplexerDeserializer(failingDeserializer) {
+          case Format.Json => formatDroppingDeserializer(stringDeserializer)
+          case Format.AvroBinarySchemaId => formatDroppingDeserializer({ data: Array[Byte] => new String(data.map(b => (b + 1).asInstanceOf[Byte]), UTF_8) }) // change the byte value
+        }
 
         val expectedString = "TestString"
         val deserialized = deserializer.deserialize("test-topic", serializer.serialize("test-topic", expectedString))
 
         deserialized shouldBe expectedString
+
+        val noFormatSerializer = new StringSerializer
+
+        a[RuntimeException] should be thrownBy {
+          deserializer.deserialize("test-topic", noFormatSerializer.serialize("test-topic", expectedString))
+        }
       }
 
       "skip the magic byte" in {
