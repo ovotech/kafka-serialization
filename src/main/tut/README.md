@@ -20,6 +20,7 @@ The library is composed by these modules:
 
  - kafka-serialization-core: provides the serialization primitives to build serializers and deserializers.
  - kafka-serialization-json4s: provides serializer and deserializer based on Json4s
+ - kafka-serialization-spray: provides serializer and deserializer based on Spray Json
  - kafka-serialization-circe: provides serializer and deserializer based on Circe
  - kafka-serialization-avro4s: provides serializer and deserializer based on Avro4s
  - kafka-serialization-client: provides Scala consumer and producer based on Akka actor

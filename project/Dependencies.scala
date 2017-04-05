@@ -128,6 +128,14 @@ object Dependencies {
 
   }
 
+  object Spray {
+
+    private val version = "1.3.3"
+
+    val json = "io.spray" %% "spray-json" % version
+
+  }
+
   val l = libraryDependencies
 
   val core = l ++= Seq(kafka.client)
@@ -137,6 +145,8 @@ object Dependencies {
   val avro4s = l ++= Seq(Avro4s.core, kafka.avroSerializer)
 
   val circe = l ++= Seq(Circe.core, Circe.parser, Circe.generic % Test)
+
+  val spray = l ++= Seq(Spray.json)
 
   val client = l ++= Seq(Akka.actor.value % Provided, Typesafe.config % Provided, Specs2.core.value % Test, Specs2.mock.value % Test)
 
