@@ -3,7 +3,4 @@
  */
 package com.ovoenergy.serialization.kafka.client
 
-/**
-  * Created by Piotr Fras on 27/02/17.
-  */
 case class Topic(value: String)

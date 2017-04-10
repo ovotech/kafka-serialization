@@ -11,9 +11,6 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
 
 import scala.concurrent.{Future, Promise}
 
-/**
-  * Created by Piotr Fras on 23/02/17.
-  */
 class KafkaIntegrationSpec extends WordSpec with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures with IntegrationPatience with Matchers with Eventually {
 
   "start consumer, producer and consume message" in {
