@@ -16,14 +16,23 @@ import javax.ws.rs.client.ClientBuilder
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Try}
 
+/**
+  * Implements the [[SchemaRegistryClient]] interface using Jersey client.
+  *
+  * It caches the schema and schema id locally to avoid issueing a new call for each request. This behavior is the same
+  * of the confluent [[io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient]].
+  *
+  * It implements only a subset of the [[SchemaRegistryClient]] interface.
+  */
 class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends SchemaRegistryClient with AutoCloseable {
 
   import JerseySchemaRegistryClient._
 
+  // This cache the schema id by subject and schema
   private val subjectSchemaCache: LoadingCache[SchemaCacheKey, java.lang.Integer] = CacheBuilder
     .newBuilder()
     .maximumSize(settings.maxCacheSize)
-    .concurrencyLevel(4)
+    .concurrencyLevel(settings.cacheParallelism)
     .build(new CacheLoader[SchemaCacheKey, java.lang.Integer] {
       override def load(key: SchemaCacheKey): java.lang.Integer = {
         val entity = Json.createObjectBuilder()
@@ -38,10 +47,11 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends
       }
     })
 
+  // This cache the schema by schema id
   private val schemaCache: LoadingCache[java.lang.Integer, Schema] = CacheBuilder
     .newBuilder()
     .maximumSize(settings.maxCacheSize)
-    .concurrencyLevel(4)
+    .concurrencyLevel(settings.cacheParallelism)
     .build(new CacheLoader[java.lang.Integer, Schema] {
       override def load(id: java.lang.Integer): Schema = {
         processResponse(schemas

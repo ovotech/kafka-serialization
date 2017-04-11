@@ -69,10 +69,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
     }
 
     "serializing json" when {
-      "balabla" in {
-
-      }
-      "is value serializer" should {
+      "the value is serializer" should {
         "register the schema to the schemaRegistry for value" in {
 
           val topic = "test-topic"
