@@ -9,73 +9,107 @@ lazy val noPublish = Seq(
   publishArtifact := false
 )
 
-lazy val `kafka-serialization-testkit` = OvoProject("kafka-serialization-testkit")
-  .settings(Shared.settings: _*)
-  .settings(Dependencies.testkit)
-  .settings(noPublish: _*)
-  .settings(Git.settings: _*)
-
 lazy val `kafka-serialization` = OvoRootProject("kafka-serialization")
   .settings(Shared.settings: _*)
   .settings(noPublish: _*)
   .settings(Tut.settings: _*)
   .enablePlugins(GitVersioning, GitBranchPrompt)
-  .aggregate(`kafka-serialization-avro4s`)
-  .aggregate(`kafka-serialization-circe`)
-  .aggregate(`kafka-serialization-spray`)
-  .aggregate(`kafka-serialization-client`)
-  .aggregate(`kafka-serialization-core`)
-  .aggregate(`kafka-serialization-json4s`)
-  .aggregate(`kafka-serialization-testkit`)
+  .aggregate(avro)
+  .aggregate(avro4s)
+  .aggregate(circe)
+  .aggregate(spray)
+  .aggregate(client)
+  .aggregate(core)
+  .aggregate(json4s)
+  .aggregate(testkit)
 
-lazy val `kafka-serialization-json4s` = OvoProject("kafka-serialization-json4s")
+lazy val testkit = OvoProject("testkit")
+  .settings(
+    name := "kafka-serialization-testkit"
+  )
+  .settings(Shared.settings: _*)
+  .settings(Dependencies.testkit)
+  .settings(noPublish: _*)
+  .settings(Git.settings: _*)
+
+lazy val json4s = OvoProject("json4s")
+  .settings(
+    name := "kafka-serialization-json4s"
+  )
   .settings(Shared.settings: _*)
   .settings(Dependencies.json4s)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
   .settings(libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value)
-  .dependsOn(`kafka-serialization-core`)
-  .dependsOn(`kafka-serialization-testkit` % "test->test")
+  .dependsOn(core)
+  .dependsOn(testkit % "test->test")
 
-lazy val `kafka-serialization-avro4s` = OvoProject("kafka-serialization-avro4s")
+lazy val avro = OvoProject("avro")
+  .settings(
+    name := "kafka-serialization-avro"
+  )
+  .settings(Shared.settings: _*)
+  .settings(Dependencies.avro)
+  .settings(Bintray.settings: _*)
+  .settings(Git.settings: _*)
+  .dependsOn(core)
+  .dependsOn(testkit % "test->test")
+
+lazy val avro4s = OvoProject("avro4s")
+  .settings(
+    name := "kafka-serialization-avro4s"
+  )
   .settings(Shared.settings: _*)
   .settings(Dependencies.avro4s)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(`kafka-serialization-core`)
-  .dependsOn(`kafka-serialization-testkit` % "test->test")
+  .dependsOn(core)
+  .dependsOn(avro)
+  .dependsOn(testkit % "test->test")
 
-lazy val `kafka-serialization-circe` = OvoProject("kafka-serialization-circe")
+lazy val circe = OvoProject("circe")
+  .settings(
+    name := "kafka-serialization-circe"
+  )
   .settings(Shared.settings: _*)
   .settings(Dependencies.circe)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(`kafka-serialization-core`)
-  .dependsOn(`kafka-serialization-testkit` % "test->test")
+  .dependsOn(core)
+  .dependsOn(testkit % "test->test")
 
-lazy val `kafka-serialization-spray` = OvoProject("kafka-serialization-spray")
+lazy val spray = OvoProject("spray")
+  .settings(
+    name := "kafka-serialization-spray"
+  )
   .settings(Shared.settings: _*)
   .settings(Dependencies.spray)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(`kafka-serialization-core`)
-  .dependsOn(`kafka-serialization-testkit` % "test->test")
+  .dependsOn(core)
+  .dependsOn(testkit % "test->test")
 
-lazy val `kafka-serialization-core` = OvoProject("kafka-serialization-core")
+lazy val core = OvoProject("core")
+  .settings(
+    name := "kafka-serialization-core"
+  )
   .settings(Shared.settings: _*)
   .settings(Dependencies.core)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(`kafka-serialization-testkit` % "test->test")
+  .dependsOn(testkit % "test->test")
 
-lazy val `kafka-serialization-client` = OvoProject("kafka-serialization-client")
+lazy val client = OvoProject("client")
+  .settings(
+    name := "kafka-serialization-client"
+  )
   .settings(Shared.settings: _*)
   .settings(Dependencies.client)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
   .settings(Defaults.itSettings: _*)
-  .dependsOn(`kafka-serialization-core`)
-  .dependsOn(`kafka-serialization-testkit` % "test->test")
-  .dependsOn(`kafka-serialization-testkit` % "it->test")
-  .dependsOn(`kafka-serialization-testkit` % "it->compile")
+  .dependsOn(core)
+  .dependsOn(testkit % "test->test")
+  .dependsOn(testkit % "it->test")
+  .dependsOn(testkit % "it->compile")
   .configs(IntegrationTest)

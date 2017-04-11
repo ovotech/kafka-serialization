@@ -84,6 +84,8 @@ object Dependencies {
     val scalaTestSupport = "org.scalamock" %% "scalamock-scalatest-support" % version
   }
 
+  val scalaArm = "com.jsuereth" %% "scala-arm" % "2.0"
+
   object kafka {
 
     private val version = "0.10.0.1"
@@ -136,11 +138,24 @@ object Dependencies {
 
   }
 
+  object Jersey {
+
+    private val version = "2.25.1"
+
+    val client = "org.glassfish.jersey.core" % "jersey-client" % version
+    val jsonProcessing = "org.glassfish.jersey.media" % "jersey-media-json-processing" % version
+    val apacheConnector = "org.glassfish.jersey.connectors" % "jersey-apache-connector" % version
+    val nettyConnector = "org.glassfish.jersey.connectors" % "jersey-netty-connector" % version
+
+  }
+
   val l = libraryDependencies
 
   val core = l ++= Seq(kafka.client)
 
   val json4s = l ++= Seq(Json4s.core.value, Json4s.native.value)
+
+  val avro = l ++= Seq(kafka.avroSerializer, Jersey.client, Jersey.nettyConnector, Jersey.jsonProcessing, scalaArm % Test)
 
   val avro4s = l ++= Seq(Avro4s.core, kafka.avroSerializer)
 
