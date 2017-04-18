@@ -24,18 +24,14 @@ lazy val `kafka-serialization` = OvoRootProject("kafka-serialization")
   .aggregate(testkit)
 
 lazy val testkit = OvoProject("testkit")
-  .settings(
-    name := "kafka-serialization-testkit"
-  )
+  .settings(name := "kafka-serialization-testkit")
   .settings(Shared.settings: _*)
   .settings(Dependencies.testkit)
   .settings(noPublish: _*)
   .settings(Git.settings: _*)
 
 lazy val json4s = OvoProject("json4s")
-  .settings(
-    name := "kafka-serialization-json4s"
-  )
+  .settings(name := "kafka-serialization-json4s")
   .settings(Shared.settings: _*)
   .settings(Dependencies.json4s)
   .settings(Bintray.settings: _*)
@@ -45,9 +41,7 @@ lazy val json4s = OvoProject("json4s")
   .dependsOn(testkit % "test->test")
 
 lazy val avro = OvoProject("avro")
-  .settings(
-    name := "kafka-serialization-avro"
-  )
+  .settings(name := "kafka-serialization-avro")
   .settings(Shared.settings: _*)
   .settings(Dependencies.avro)
   .settings(Bintray.settings: _*)
@@ -56,9 +50,7 @@ lazy val avro = OvoProject("avro")
   .dependsOn(testkit % "test->test")
 
 lazy val avro4s = OvoProject("avro4s")
-  .settings(
-    name := "kafka-serialization-avro4s"
-  )
+  .settings(name := "kafka-serialization-avro4s")
   .settings(Shared.settings: _*)
   .settings(Dependencies.avro4s)
   .settings(Bintray.settings: _*)
@@ -68,9 +60,7 @@ lazy val avro4s = OvoProject("avro4s")
   .dependsOn(testkit % "test->test")
 
 lazy val circe = OvoProject("circe")
-  .settings(
-    name := "kafka-serialization-circe"
-  )
+  .settings(name := "kafka-serialization-circe")
   .settings(Shared.settings: _*)
   .settings(Dependencies.circe)
   .settings(Bintray.settings: _*)
@@ -79,9 +69,7 @@ lazy val circe = OvoProject("circe")
   .dependsOn(testkit % "test->test")
 
 lazy val spray = OvoProject("spray")
-  .settings(
-    name := "kafka-serialization-spray"
-  )
+  .settings(name := "kafka-serialization-spray")
   .settings(Shared.settings: _*)
   .settings(Dependencies.spray)
   .settings(Bintray.settings: _*)
@@ -90,9 +78,7 @@ lazy val spray = OvoProject("spray")
   .dependsOn(testkit % "test->test")
 
 lazy val core = OvoProject("core")
-  .settings(
-    name := "kafka-serialization-core"
-  )
+  .settings(name := "kafka-serialization-core")
   .settings(Shared.settings: _*)
   .settings(Dependencies.core)
   .settings(Bintray.settings: _*)
@@ -100,9 +86,7 @@ lazy val core = OvoProject("core")
   .dependsOn(testkit % "test->test")
 
 lazy val client = OvoProject("client")
-  .settings(
-    name := "kafka-serialization-client"
-  )
+  .settings(name := "kafka-serialization-client")
   .settings(Shared.settings: _*)
   .settings(Dependencies.client)
   .settings(Bintray.settings: _*)
