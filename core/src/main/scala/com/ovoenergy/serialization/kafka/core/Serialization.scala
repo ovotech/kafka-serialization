@@ -75,11 +75,13 @@ object Serialization {
     }
   }
 
-  def serializer[T](f: (String, T) => Array[Byte]): KafkaSerializer[T] = new KafkaSerializer[T] {
+  def serializer[T](f: (String, T) => Array[Byte]): KafkaSerializer[T] = serializer(f, () => Unit)
+
+  def serializer[T](f: (String, T) => Array[Byte], c: () => Unit): KafkaSerializer[T] = new KafkaSerializer[T] {
 
     override def configure(configs: util.Map[String, _], isKey: Boolean): Unit = {}
 
-    override def close(): Unit = {}
+    override def close(): Unit = c()
 
     override def serialize(topic: String, data: T): Array[Byte] = f(topic, data)
   }
@@ -101,11 +103,13 @@ object Serialization {
     })
   }
 
-  def deserializer[T](f: (String, Array[Byte]) => T): KafkaDeserializer[T] = new KafkaDeserializer[T] {
+  def deserializer[T](f: (String, Array[Byte]) => T): KafkaDeserializer[T] = deserializer(f, () => Unit)
+
+  def deserializer[T](f: (String, Array[Byte]) => T, c: () => Unit): KafkaDeserializer[T] = new KafkaDeserializer[T] {
 
     override def configure(configs: util.Map[String, _], isKey: Boolean): Unit = {}
 
-    override def close(): Unit = {}
+    override def close(): Unit = c()
 
     override def deserialize(topic: String, data: Array[Byte]): T = f(topic, data)
   }
