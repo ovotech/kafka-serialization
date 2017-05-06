@@ -5,16 +5,15 @@ import java.nio.ByteBuffer
 
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream
 import com.ovoenergy.kafka.serialization.avro.{JerseySchemaRegistryClient, SchemaRegistryClientSettings}
-import com.ovoenergy.kafka.serialization.core.Format._
-import com.ovoenergy.kafka.serialization.core.Serialization
 import com.sksamuel.avro4s._
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
 import org.apache.avro.generic.{GenericDatumReader, GenericDatumWriter, GenericRecord}
 import org.apache.avro.io.{DecoderFactory, EncoderFactory}
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
+import com.ovoenergy.kafka.serialization.core._
 
-trait Avro4sSerialization extends Serialization {
+trait Avro4sSerialization {
 
   def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
     avroBinarySchemaIdDeserializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
@@ -39,7 +38,7 @@ trait Avro4sSerialization extends Serialization {
     d.configure(Map("schema.registry.url" -> "").asJava, isKey)
 
     deserializer({ (topic, data) =>
-      fromRecord(d.deserialize(topic, data).asInstanceOf[GenericRecord])
+      fromRecord(d.deserialize(topic, Array(0: Byte) ++ data).asInstanceOf[GenericRecord])
     }, close)
   }
 
@@ -92,7 +91,12 @@ trait Avro4sSerialization extends Serialization {
     kafkaAvroSerializer.configure(Map("schema.registry.url" -> "").asJava, isKey)
 
     serializer({ (topic, t) =>
-      kafkaAvroSerializer.serialize(topic, toRecord(t))
+      val bytes = kafkaAvroSerializer.serialize(topic, toRecord(t))
+      if(bytes != null && bytes.nonEmpty) {
+        bytes.drop(1)
+      } else {
+        bytes
+      }
     }, close)
   }
 
@@ -110,7 +114,7 @@ trait Avro4sSerialization extends Serialization {
   }
 
   private def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
-    formatCheckingDeserializer(AvroJsonSchemaId, deserializer({ (topic, data) =>
+    formatCheckingDeserializer(Format.AvroJsonSchemaId, deserializer({ (topic, data) =>
 
       val buffer = ByteBuffer.wrap(data)
       val schemaId = buffer.getInt
@@ -141,7 +145,7 @@ trait Avro4sSerialization extends Serialization {
   }
 
   private def avroJsonSchemaIdDeserializer[T: FromRecord : SchemaFor](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
-    formatCheckingDeserializer(AvroJsonSchemaId, deserializer({ (topic, data) =>
+    deserializer({ (topic, data) =>
 
       val buffer = ByteBuffer.wrap(data)
       val schemaId = buffer.getInt
@@ -154,7 +158,7 @@ trait Avro4sSerialization extends Serialization {
       val readRecord = reader.read(null, jsonDecoder)
 
       implicitly[FromRecord[T]].apply(readRecord)
-    }, close))
+    }, close)
   }
 
   def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] = {
@@ -174,7 +178,7 @@ trait Avro4sSerialization extends Serialization {
 
     val toRecord: ToRecord[T] = implicitly
 
-    formatSerializer(AvroJsonSchemaId, serializer({ (topic, t) =>
+    serializer({ (topic, t) =>
 
       val record = toRecord(t)
       implicit val schemaFor: SchemaFor[T] = new SchemaFor[T] {
@@ -194,6 +198,6 @@ trait Avro4sSerialization extends Serialization {
       bout.close()
 
       ByteBuffer.allocate(4).putInt(schemaId).array() ++ bout.toByteArray
-    }, close))
+    }, close)
   }
 }

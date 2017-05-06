@@ -19,14 +19,10 @@ object Format {
     case Custom(b) => b
   }
 
-  def fromByte(b: Byte): Option[Format] = b match {
-    case 0 => Some(AvroBinarySchemaId)
-    case 1 => Some(AvroJsonSchemaId)
-    case 2 => Some(Json)
-    case n => Some(Custom(n))
-  }
-
-  implicit class RichFormat(val f: Format) extends AnyVal {
-    def toByte: Byte = Format.toByte(f)
+  def fromByte(b: Byte): Format = b match {
+    case 0 => AvroBinarySchemaId
+    case 1 => AvroJsonSchemaId
+    case 2 => Json
+    case n => Custom(n)
   }
 }

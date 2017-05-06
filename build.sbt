@@ -6,7 +6,6 @@ lazy val `kafka-serialization` = project
     name := "kafka-serialization"
   )
   .settings(Shared.settings: _*)
-  .settings(Tut.settings: _*)
   .enablePlugins(GitVersioning, GitBranchPrompt)
   .aggregate(avro, avro4s, circe, core, json4s, spray, testkit)
 

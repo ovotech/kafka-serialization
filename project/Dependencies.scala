@@ -73,7 +73,7 @@ object Dependencies {
 
   object kafka {
 
-    private val version = "0.10.0.1"
+    private val version = "0.10.2.1"
 
     val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "3.1.1" exclude("org.slf4j", "slf4j-log4j12")
     val client = "org.apache.kafka" % "kafka-clients" % version exclude("org.slf4j", "slf4j-log4j12")
@@ -107,7 +107,7 @@ object Dependencies {
 
   object Wiremock {
 
-    private val version = "2.4.1"
+    private val version = "2.6.0"
 
     val wiremock = "com.github.tomakehurst" % "wiremock" % version
 

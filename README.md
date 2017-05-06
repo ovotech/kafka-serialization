@@ -1,5 +1,5 @@
-Kafka serialization with format byte
-====================================
+Kafka serialization/deserialization with format byte
+====================================================
 
 The aim of this library is to have a standard serialization/deserialization for kafka. It uses a byte in the head of the
 serialized data to identify the serialization format. At the moment the supported formats are
@@ -20,75 +20,54 @@ The library is composed by these modules:
 
  - kafka-serialization-core: provides the serialization primitives to build serializers and deserializers.
  - kafka-serialization-json4s: provides serializer and deserializer based on Json4s
+ - kafka-serialization-spray: provides serializer and deserializer based on Spray Json
  - kafka-serialization-circe: provides serializer and deserializer based on Circe
+ - kafka-serialization-avro: provides an improved schema-registry client based on Jersey 2.x
  - kafka-serialization-avro4s: provides serializer and deserializer based on Avro4s
- - kafka-serialization-client: provides Scala consumer and producer based on Akka actor
 
 The Avro4s serialization support the schema evolution through the schema registry. The consumer can provide its own schema
 and Avro will take care of the conversion.
 
-Simple Circe serialization example:
+Simple deserialization example:
 
-````scala
+```scala
+import com.ovoenergy.kafka.serialization.core._
+import com.ovoenergy.kafka.serialization.circe._
+import com.ovoenergy.kafka.serialization.avro4s._
+import com.ovoenergy.kafka.serialization.json4s._
+
 import io.circe.generic.auto._
-import io.circe.jawn.JawnParser
 import io.circe.syntax._
-import java.nio.charset.StandardCharsets._
-import com.ovoenergy.kafka.serialization.CirceSerialization._
-import com.ovoenergy.kafka.serialization.Serialization._
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import java.util.Properties
 
 case class Key(eventType: String)
 case class Event(name: String)
 
-val props = new Properties()
-val producer = new KafkaProducer[Key, Event](props, circeJsonSerializer[Key], circeJsonSerializer[Event])
-val consumer = new KafkaConsumer[Key, Event](props, circeJsonDeserializer[Key], circeJsonDeserializer[Event])
+val schemaRegistryEndpoint = "http:localhost:8081"
 
-// Non strict consumer
-val nonStrictConsumer = new KafkaConsumer[Key, () => Event](props, circeJsonDeserializer[Key], nonStrictDeserializer(circeJsonDeserializer[Event]))
-````
+// Circe based deserializer
+val keyDeserializer = circeJsonDeserializer[Key]
 
-The deserializer is able to demultiplex on different format:
-````scala
-import io.circe.generic.auto._
-import io.circe.jawn.JawnParser
-import io.circe.syntax._
-import java.nio.charset.StandardCharsets._
-import com.ovoenergy.kafka.serialization.CirceSerialization._
-import com.ovoenergy.kafka.serialization.Serialization._
-import com.ovoenergy.kafka.serialization.Avro4sSerialization._
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import java.util.Properties
-import com.sksamuel.avro4s._
+// Json4s based deserializer
+val valueDeserializer = json4sDeserializer[Event]
 
-case class Key(eventType: String)
-case class Event(name: String)
+// It will check the format byte and drop it
+val checkingKeyDeserializer = formatCheckingDeserializer(Format.Json, keyDeserializer)
 
-implicit val eventFromRecord = FromRecord[Event]
+// It will drop the format byte without checking it
+val droppingValueDeserializer = formatDroppingDeserializer(valueDeserializer)
 
-val schemaRegistryEndpoint: String  = "http://localhost:8080"
-val props = new Properties()
+// It will demultiplex the format byte and drop it
+val formatDemultiplexer = formatDemultiplexerDeserializer[Event](notMatched => json4sDeserializer[Event]){
+  case Format.AvroJsonSchemaId => avroJsonSchemaIdDeserializer[Event](schemaRegistryEndpoint)
+  case Format.AvroBinarySchemaId => avroBinarySchemaIdDeserializer[Event](schemaRegistryEndpoint)
+}
 
-val producerOne = new KafkaProducer[Key, Event](props, circeJsonSerializer[Key], circeJsonSerializer[Event])
-val producerTwo = new KafkaProducer[Key, Event](props, circeJsonSerializer[Key], avroBinarySchemaIdSerializer[Event](schemaRegistryEndpoint, isKey = false))
+// It will demultiplex the topic
+val topicDemultiplexer = topicDemultiplexerDeserializer[Event](notMatched => json4sDeserializer[Event]){
+  case "topic-1" => avroJsonSchemaIdDeserializer[Event](schemaRegistryEndpoint)
+  case "topic-2" => avroBinarySchemaIdDeserializer[Event](schemaRegistryEndpoint)
+}
 
-// Non strict consumer
-val consumer = new KafkaConsumer[Key, Event](props, circeJsonDeserializer[Key], formatDemultiplexerDeserializer(
-  Format.AvroBinarySchemaId -> avroBinarySchemaIdDeserializer(schemaRegistryEndpoint, isKey = false),
-  Format.Json -> circeJsonDeserializer[Event]
-))
-````
+// All of these could be composed in a more complex configuration
+```
 
-## About this README
-
-The code samples in this README file are checked using [tut](https://github.com/tpolecat/tut).
-
-This means that the `README.md` file is generated from `src/main/tut/README.md`. If you want to make any changes to the README, you should:
-
-1. Edit `src/main/tut/README.md`
-2. Run `sbt tut` to regenerate `./README.md`
-3. Commit both files to git

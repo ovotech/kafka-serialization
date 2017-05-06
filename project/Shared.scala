@@ -15,7 +15,11 @@ object Shared {
     scmInfo := Some(ScmInfo(url("https://github.com/ovotech/kafka-serialization"), "git@github.com:ovotech/kafka-serialization.git")),
     scalaVersion := "2.12.2",
     crossScalaVersions := Seq(scalaVersion.value, "2.11.8"),
-    resolvers ++= Seq(Resolver.mavenLocal, Resolver.typesafeRepo("releases"), "confluent-release" at "http://packages.confluent.io/maven/"),
+    resolvers := Resolver.withDefaultResolvers(Seq(
+      Resolver.mavenLocal,
+      Resolver.typesafeRepo("releases"),
+      "confluent-release" at "http://packages.confluent.io/maven/"
+    )),
     headers := Map("java" -> Apache2_0("2017", "OVO Energy"), "scala" -> Apache2_0("2017", "OVO Energy"), "conf" -> Apache2_0("2017", "OVO Energy", "#"))
   )
 

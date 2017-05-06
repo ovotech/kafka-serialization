@@ -4,7 +4,6 @@ import java.io.{ByteArrayOutputStream, OutputStream}
 import java.nio.ByteBuffer
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.ovoenergy.kafka.serialization.core.Format._
 import com.ovoenergy.kafka.serialization.testkit.{UnitSpec, WireMockFixture}
 import com.sksamuel.avro4s.{AvroOutputStream, FromRecord, SchemaFor, ToRecord}
 import org.apache.avro.Schema
@@ -173,19 +172,19 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
   }
 
   private def asAvroBinaryWithSchemaIdBytes[T: SchemaFor : ToRecord](t: T, schemaId: Int): Array[Byte] = {
-    asAvroWithSchemaIdBytes(t, toByte(AvroBinarySchemaId), schemaId, AvroOutputStream.binary[T])
+    asAvroWithSchemaIdBytes(t, schemaId, AvroOutputStream.binary[T])
   }
 
   private def asAvroJsonWithSchemaIdBytes[T: SchemaFor : ToRecord](t: T, schemaId: Int): Array[Byte] = {
-    asAvroWithSchemaIdBytes(t, toByte(AvroJsonSchemaId), schemaId, AvroOutputStream.json[T])
+    asAvroWithSchemaIdBytes(t, schemaId, AvroOutputStream.json[T])
   }
 
-  private def asAvroWithSchemaIdBytes[T: SchemaFor : ToRecord](t: T, formatByte: Byte, schemaId: Int, mkAvroOut: OutputStream => AvroOutputStream[T]): Array[Byte] = {
+  private def asAvroWithSchemaIdBytes[T: SchemaFor : ToRecord](t: T, schemaId: Int, mkAvroOut: OutputStream => AvroOutputStream[T]): Array[Byte] = {
     val bout = new ByteArrayOutputStream()
     val avroOut = mkAvroOut(bout)
     avroOut.write(t)
     avroOut.flush()
-    ByteBuffer.allocate(bout.size() + 1 + 4).put(formatByte).putInt(schemaId).put(bout.toByteArray).array()
+    ByteBuffer.allocate(bout.size()+ 4).putInt(schemaId).put(bout.toByteArray).array()
   }
 
 

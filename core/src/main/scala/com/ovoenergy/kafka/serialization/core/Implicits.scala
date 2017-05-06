@@ -3,7 +3,7 @@ package com.ovoenergy.kafka.serialization.core
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
 import scala.language.implicitConversions
 
-trait Implicits extends Serialization {
+trait Implicits {
 
   implicit def function2Serializer[T](f: (String, T) => Array[Byte]): KafkaSerializer[T] = serializer(f)
 
