@@ -3,15 +3,14 @@ package com.ovoenergy.kafka.serialization.avro
 import javax.ws.rs.core.HttpHeaders
 
 import com.github.tomakehurst.wiremock.client.{BasicCredentials, WireMock}
-import com.ovoenergy.serialization.kafka.testkit.{UnitSpec, WireMockFixture}
+import com.ovoenergy.kafka.serialization.testkit.{UnitSpec, WireMockFixture}
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException
-import org.apache.avro.SchemaBuilder
+import org.apache.avro.{Schema, SchemaBuilder}
 class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with SchemaRegistryFixture {
 
   import WireMock._
 
-  val schema = SchemaBuilder.record("Foo").fields().nullableBoolean("foo", false).endRecord()
-
+  val schema: Schema = SchemaBuilder.record("Foo").fields().nullableBoolean("foo", false).endRecord()
 
   "JerseySchemaRegistryClient" when {
     "fetching a schema" when {

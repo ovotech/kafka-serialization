@@ -1,17 +1,11 @@
 import com.typesafe.sbt.{GitBranchPrompt, GitVersioning}
 
-def OvoRootProject(name: String) = Project(name, file("."))
-
-def OvoProject(name: String) = Project(name, file(name))
-
-lazy val noPublish = Seq(
-  publish := {},
-  publishArtifact := false
-)
-
 lazy val `kafka-serialization` = project
+  .in(file("."))
+  .settings(
+    name := "kafka-serialization"
+  )
   .settings(Shared.settings: _*)
-  .settings(noPublish: _*)
   .settings(Tut.settings: _*)
   .enablePlugins(GitVersioning, GitBranchPrompt)
   .aggregate(avro, avro4s, circe, core, json4s, spray, testkit)
