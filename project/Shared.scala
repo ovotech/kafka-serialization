@@ -2,6 +2,7 @@ import de.heikoseeberger.sbtheader.HeaderKey.headers
 import de.heikoseeberger.sbtheader.license.Apache2_0
 import sbt.Keys._
 import sbt.{Resolver, ScmInfo, url, _}
+import bintray.BintrayKeys._
 
 object Shared {
 
@@ -21,7 +22,10 @@ object Shared {
       Resolver.bintrayRepo("tpolecat", "maven"),
       "confluent-release" at "http://packages.confluent.io/maven/"
     )),
-    headers := Map("java" -> Apache2_0("2017", "OVO Energy"), "scala" -> Apache2_0("2017", "OVO Energy"), "conf" -> Apache2_0("2017", "OVO Energy", "#"))
+    headers := Map("java" -> Apache2_0("2017", "OVO Energy"), "scala" -> Apache2_0("2017", "OVO Energy"), "conf" -> Apache2_0("2017", "OVO Energy", "#")),
+    bintrayOrganization := Some("ovotech"),
+    bintrayRepository := "maven",
+    bintrayPackageLabels := Seq("apache-kafka", "serialization", "json", "avro", "circe", "spray-json", "json4s", "avro4s")
   )
 
 }

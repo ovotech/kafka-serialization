@@ -11,6 +11,8 @@ machine:
     version: oraclejdk8
 
 dependencies:
+  pre:
+    - build/bintray.sh
   cache_directories:
     - "~/.ivy2"
     - "~/.sbt"

@@ -4,7 +4,7 @@ import com.typesafe.sbt.{GitBranchPrompt, GitVersioning}
 lazy val `kafka-serialization` = project
   .in(file("."))
   .aggregate(avro, avro4s, circe, core, json4s, spray, testkit, doc)
-  .enablePlugins(GitVersioning, GitBranchPrompt, TutPlugin)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization"
   )
@@ -24,7 +24,7 @@ lazy val doc = project
 
 lazy val testkit = project
   .in(file("testkit"))
-  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization-testkit"
   )
@@ -35,7 +35,7 @@ lazy val testkit = project
 lazy val json4s = project
   .in(file("json4s"))
   .dependsOn(core, testkit % Test)
-  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization-json4s"
   )
@@ -49,7 +49,7 @@ lazy val json4s = project
 lazy val avro = project
   .in(file("avro"))
   .dependsOn(core, testkit % Test)
-  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization-avro"
   )
@@ -61,7 +61,7 @@ lazy val avro = project
 lazy val avro4s = project
   .in(file("avro4s"))
   .dependsOn(core, avro, testkit % Test)
-  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization-avro4s"
   )
@@ -73,7 +73,7 @@ lazy val avro4s = project
 lazy val circe = project
   .in(file("circe"))
   .dependsOn(core, testkit % Test)
-  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization-circe"
   )
@@ -85,7 +85,7 @@ lazy val circe = project
 lazy val spray = project
   .in(file("spray"))
   .dependsOn(core, testkit % Test)
-  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization-spray"
   )
@@ -97,7 +97,7 @@ lazy val spray = project
 lazy val core = project
   .in(file("core"))
   .dependsOn(testkit % Test)
-  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
     name := "kafka-serialization-core"
   )
