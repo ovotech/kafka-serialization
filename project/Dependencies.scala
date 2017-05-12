@@ -81,7 +81,7 @@ object Dependencies {
 
   object Circe {
 
-    private val version = "0.6.1"
+    private val version = "0.8.0"
 
     val core = "io.circe" %% "circe-core" % version
     val generic = "io.circe" %% "circe-generic" % version
@@ -148,4 +148,5 @@ object Dependencies {
 
   val testkit = l ++= Seq(Akka.testKit, scalaTest.scalaTest, scalaCheck.scalaCheck, Typesafe.config, scalaMock.scalaTestSupport, logback.classic, Wiremock.wiremock)
 
+  val doc = l ++= Seq(Circe.generic % "tut")
 }

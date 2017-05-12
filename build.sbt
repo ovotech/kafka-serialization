@@ -1,16 +1,30 @@
 import com.typesafe.sbt.{GitBranchPrompt, GitVersioning}
 
+
 lazy val `kafka-serialization` = project
   .in(file("."))
+  .aggregate(avro, avro4s, circe, core, json4s, spray, testkit, doc)
+  .enablePlugins(GitVersioning, GitBranchPrompt, TutPlugin)
   .settings(
     name := "kafka-serialization"
   )
   .settings(Shared.settings: _*)
-  .enablePlugins(GitVersioning, GitBranchPrompt)
-  .aggregate(avro, avro4s, circe, core, json4s, spray, testkit)
+
+lazy val doc = project
+  .in(file("doc"))
+  .dependsOn(avro % "tut", avro4s % "tut", circe % "tut", core % "tut", json4s % "tut", spray % "tut")
+  .enablePlugins(TutPlugin)
+  .settings(Shared.settings: _*)
+  .settings(
+    name := "kafka-serialization-doc",
+    publishTo := None,
+    tutTargetDirectory := (baseDirectory.value).getParentFile
+  )
+  .settings(Dependencies.doc)
 
 lazy val testkit = project
   .in(file("testkit"))
+  .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-testkit"
   )
@@ -20,6 +34,8 @@ lazy val testkit = project
 
 lazy val json4s = project
   .in(file("json4s"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-json4s"
   )
@@ -27,11 +43,13 @@ lazy val json4s = project
   .settings(Dependencies.json4s)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
+
   .settings(libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value)
-  .dependsOn(core, testkit % Test)
 
 lazy val avro = project
   .in(file("avro"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-avro"
   )
@@ -39,10 +57,11 @@ lazy val avro = project
   .settings(Dependencies.avro)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(core, testkit % Test)
 
 lazy val avro4s = project
   .in(file("avro4s"))
+  .dependsOn(core, avro, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-avro4s"
   )
@@ -50,10 +69,11 @@ lazy val avro4s = project
   .settings(Dependencies.avro4s)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(core, avro, testkit % Test)
 
 lazy val circe = project
   .in(file("circe"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-circe"
   )
@@ -61,10 +81,11 @@ lazy val circe = project
   .settings(Dependencies.circe)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(core, testkit % Test)
 
 lazy val spray = project
   .in(file("spray"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-spray"
   )
@@ -72,10 +93,10 @@ lazy val spray = project
   .settings(Dependencies.spray)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(core, testkit % Test)
 
 lazy val core = project
   .in(file("core"))
+  .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-core"
   )
@@ -83,4 +104,4 @@ lazy val core = project
   .settings(Dependencies.core)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
-  .dependsOn(testkit % Test)
+

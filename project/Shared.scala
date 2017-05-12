@@ -18,6 +18,7 @@ object Shared {
     resolvers := Resolver.withDefaultResolvers(Seq(
       Resolver.mavenLocal,
       Resolver.typesafeRepo("releases"),
+      Resolver.bintrayRepo("tpolecat", "maven"),
       "confluent-release" at "http://packages.confluent.io/maven/"
     )),
     headers := Map("java" -> Apache2_0("2017", "OVO Energy"), "scala" -> Apache2_0("2017", "OVO Energy"), "conf" -> Apache2_0("2017", "OVO Energy", "#"))

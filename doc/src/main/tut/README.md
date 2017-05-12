@@ -46,7 +46,7 @@ information on the [Circe website](https://circe.github.io/circe).
 
 Simple serialization/deserialization example with Circe:
 
-```scala
+```tut:silent
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.circe._
 
@@ -93,7 +93,7 @@ information in the [Confluent Schema Registry Documentation ](http://docs.conflu
 
 
 An example with Avro4s binary and Schema Registry:
-```scala
+```tut:silent
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.avro4s._
 
@@ -138,7 +138,7 @@ consumer schema. The use case is when the consumer is only interested in a part 
 or when the original message is in a older or newer format of the cosumer schema (schema evolution).
 
 An example of the consumer schema:
-```scala
+```tut:silent
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.avro4s._
 
@@ -185,7 +185,7 @@ demultiplex different serializers/deserializers based on that format byte. At th
   - Avro JSON with schema ID
 
 let's see this mechanism in action:
-```scala
+```tut:silent
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.avro4s._
 import com.ovoenergy.kafka.serialization.circe._
