@@ -215,7 +215,7 @@ class SerializationSpec extends UnitSpec {
               case IntTopic => intDeserializer.asInstanceOf[Deserializer[Any]]
             }
 
-            val deserialized = deserializer.deserialize(IntTopic, intSerializer.serialize("Does not matter", expectedInt))
+            val deserialized = deserializer.deserialize(IntTopic, intSerializer.serialize(IgnoredTopic, expectedInt))
 
             deserialized shouldBe expectedInt
           }
@@ -237,7 +237,7 @@ class SerializationSpec extends UnitSpec {
               case IntTopic => intDeserializer.asInstanceOf[Deserializer[Any]]
             }
 
-            val deserialized = deserializer.deserialize(NonMatchingTopic, intSerializer.serialize("Does not matter", 45))
+            val deserialized = deserializer.deserialize(NonMatchingTopic, intSerializer.serialize(IgnoredTopic, 45))
 
             deserialized shouldBe ExpectedValue
           }

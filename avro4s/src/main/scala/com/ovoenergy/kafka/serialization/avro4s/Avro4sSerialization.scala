@@ -13,7 +13,7 @@ import org.apache.avro.io.{DecoderFactory, EncoderFactory}
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
 import com.ovoenergy.kafka.serialization.core._
 
-trait Avro4sSerialization {
+private[avro4s] trait Avro4sSerialization {
 
   def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
     avroBinarySchemaIdDeserializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)

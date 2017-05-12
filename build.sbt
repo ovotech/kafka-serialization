@@ -96,6 +96,7 @@ lazy val spray = project
 
 lazy val core = project
   .in(file("core"))
+  .dependsOn(testkit % Test)
   .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(
     name := "kafka-serialization-core"

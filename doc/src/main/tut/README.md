@@ -1,5 +1,10 @@
 Kafka serialization/deserialization building blocks
 ===================================================
+[![CircleCI Badge](https://circleci.com/gh/ovotech/kafka-serialization.svg?style=shield)](https://circleci.com/gh/ovotech/kafka-serialization)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5d8922799fdc44d48764e8f647ba28dc)](https://www.codacy.com/app/me_62/kafka-serialization?utm_source=github.com&utm_medium=referral&utm_content=ovotech/kafka-serialization&utm_campaign=badger)
+[![Download](https://api.bintray.com/packages/ovotech/maven/kafka-serialization/images/download.svg)](https://bintray.com/ovotech/maven/kafka-serialization/_latestVersion)
+
+
 The aim of this library is to provide the Lego&trade; bricks to build a serializer/deserializer for kafka messages. 
 
 The serializers/deserializers built by this library cannot be used in the Kafka configuration through properties, but 
