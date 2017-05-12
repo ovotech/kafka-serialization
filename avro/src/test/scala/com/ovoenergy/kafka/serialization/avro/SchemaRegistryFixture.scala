@@ -2,7 +2,7 @@ package com.ovoenergy.kafka.serialization.avro
 
 import org.scalatest.{BeforeAndAfterEach, Suite}
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.ovoenergy.serialization.kafka.testkit.WireMockFixture
+import com.ovoenergy.kafka.serialization.testkit.WireMockFixture
 import org.apache.avro.Schema
 
 trait SchemaRegistryFixture extends BeforeAndAfterEach {
