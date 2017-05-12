@@ -17,6 +17,7 @@ dependencies:
   cache_directories:
     - "~/.ivy2"
     - "~/.sbt"
+    - "~/.coursier"
     - "target/resolution-cache"
     - "project/target/resolution-cache"
   override:
