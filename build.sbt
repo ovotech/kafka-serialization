@@ -9,6 +9,7 @@ lazy val `kafka-serialization` = project
     name := "kafka-serialization"
   )
   .settings(Shared.settings: _*)
+  .settings(Bintray.settings:_*)
 
 lazy val doc = project
   .in(file("doc"))
@@ -20,17 +21,22 @@ lazy val doc = project
     publishTo := None,
     tutTargetDirectory := (baseDirectory.value).getParentFile
   )
+  .settings(Shared.settings: _*)
   .settings(Dependencies.doc)
+
+
 
 lazy val testkit = project
   .in(file("testkit"))
   .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(
-    name := "kafka-serialization-testkit"
+    name := "kafka-serialization-testkit",
+    publishTo := None
   )
   .settings(Shared.settings: _*)
   .settings(Dependencies.testkit)
   .settings(Git.settings: _*)
+
 
 lazy val json4s = project
   .in(file("json4s"))
@@ -43,6 +49,8 @@ lazy val json4s = project
   .settings(Dependencies.json4s)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
+  .settings(Bintray.settings:_*)
+
 
   .settings(libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value)
 

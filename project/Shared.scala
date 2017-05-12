@@ -2,12 +2,10 @@ import de.heikoseeberger.sbtheader.HeaderKey.headers
 import de.heikoseeberger.sbtheader.license.Apache2_0
 import sbt.Keys._
 import sbt.{Resolver, ScmInfo, url, _}
-import bintray.BintrayKeys._
 
 object Shared {
 
   lazy val settings = Seq(
-    fork in Test := true,
     organization := "com.ovoenergy",
     organizationHomepage := Some(url("https://www.ovoenergy.com/")),
     homepage := Some(url("https://github.com/ovotech/kafka-serialization")),
@@ -22,10 +20,7 @@ object Shared {
       Resolver.bintrayRepo("tpolecat", "maven"),
       "confluent-release" at "http://packages.confluent.io/maven/"
     )),
-    headers := Map("java" -> Apache2_0("2017", "OVO Energy"), "scala" -> Apache2_0("2017", "OVO Energy"), "conf" -> Apache2_0("2017", "OVO Energy", "#")),
-    bintrayOrganization := Some("ovotech"),
-    bintrayRepository := "maven",
-    bintrayPackageLabels := Seq("apache-kafka", "serialization", "json", "avro", "circe", "spray-json", "json4s", "avro4s")
+    headers := Map("java" -> Apache2_0("2017", "OVO Energy"), "scala" -> Apache2_0("2017", "OVO Energy"), "conf" -> Apache2_0("2017", "OVO Energy", "#"))
   )
 
 }
