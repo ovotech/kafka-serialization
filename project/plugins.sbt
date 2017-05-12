@@ -14,3 +14,10 @@ resolvers += Resolver.bintrayRepo("tpolecat", "maven")
 
 // TO mute sbt-git
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.22"
+
+// To solve the json4s issue with bintray
+dependencyOverrides ++= Set(
+  "org.json4s" %% "json4s-core" % "3.2.10",
+  "org.json4s" %% "json4s-ast" % "3.2.10",
+  "org.json4s" %% "json4s-native" % "3.2.10"
+)
