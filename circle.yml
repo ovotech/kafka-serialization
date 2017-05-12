@@ -12,6 +12,7 @@ machine:
 
 dependencies:
   pre:
+    - build/coursier.sh
     - build/bintray.sh
   cache_directories:
     - "~/.ivy2"
