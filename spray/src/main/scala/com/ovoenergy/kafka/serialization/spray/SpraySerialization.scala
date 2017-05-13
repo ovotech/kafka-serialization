@@ -12,6 +12,8 @@ trait SpraySerialization {
   def spraySerializer[T](implicit format: JsonWriter[T]): KafkaSerializer[T] = serializer { (_, data) =>
     val bout = new ByteArrayOutputStream()
     val osw = new OutputStreamWriter(bout, StandardCharsets.UTF_8)
+
+    // TODO use scala-arm
     try {
       osw.write(data.toJson.compactPrint)
       osw.flush()
@@ -26,4 +28,3 @@ trait SpraySerialization {
   }
 
 }
-

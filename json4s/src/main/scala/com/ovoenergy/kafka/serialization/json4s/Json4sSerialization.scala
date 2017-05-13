@@ -16,6 +16,8 @@ trait Json4sSerialization {
   def json4sSerializer[T <: AnyRef](implicit jsonFormats: Formats): KafkaSerializer[T] = serializer { (_, data) =>
     val bout = new ByteArrayOutputStream()
     val writer = new OutputStreamWriter(bout, StandardCharsets.UTF_8)
+
+    // TODO Use scala-arm
     try {
       write(data, writer)
       writer.flush()
@@ -30,6 +32,5 @@ trait Json4sSerialization {
     implicit val cl = ClassTag[T](tt.mirror.runtimeClass(tt.tpe))
     read[T](new InputStreamReader(new ByteArrayInputStream(data), StandardCharsets.UTF_8))
   }
-
 
 }

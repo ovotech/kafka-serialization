@@ -1,7 +1,7 @@
 package com.ovoenergy.kafka.serialization.core
 
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
+import java.nio.charset.StandardCharsets.UTF_8
 
 import com.ovoenergy.kafka.serialization.core.syntax._
 import com.ovoenergy.kafka.serialization.testkit.UnitSpec
@@ -9,20 +9,9 @@ import org.apache.kafka.common.serialization.{Deserializer, Serializer}
 
 import scala.util.Random
 
-class SerializationSpec extends UnitSpec {
+import SerializationSpec._
 
-  import StandardCharsets._
-
-  val stringSerializer: Serializer[String] = (s: String) => s.getBytes(UTF_8)
-  val stringDeserializer: Deserializer[String] = (data: Array[Byte]) => new String(data, UTF_8)
-
-  val intSerializer: Serializer[Int] = { (i: Int) =>
-    ByteBuffer.allocate(4).putInt(i).array()
-  }
-
-  val intDeserializer: Deserializer[Int] = { (data: Array[Byte]) =>
-    ByteBuffer.wrap(data).getInt
-  }
+object SerializationSpec {
 
   val IgnoredTopic = "Does not matter"
 
@@ -30,13 +19,28 @@ class SerializationSpec extends UnitSpec {
 
   val IntTopic = "int-topic"
 
+  val StringSerializer: Serializer[String] = (s: String) => s.getBytes(UTF_8)
+  val StringDeserializer: Deserializer[String] = (data: Array[Byte]) => new String(data, UTF_8)
+
+  val IntSerializer: Serializer[Int] = { (i: Int) =>
+    ByteBuffer.allocate(4).putInt(i).array()
+  }
+
+  val IntDeserializer: Deserializer[Int] = { (data: Array[Byte]) =>
+    ByteBuffer.wrap(data).getInt
+  }
+}
+
+class SerializationSpec extends UnitSpec {
 
   "Serialization" when {
 
     "serializing" when {
 
       "add the magic byte to the serialized data" in {
-        formatSerializer(Format.Json, stringSerializer).serialize("test", "Test")(0) should be(Format.toByte(Format.Json))
+        formatSerializer(Format.Json, StringSerializer).serialize("test", "Test")(0) should be(
+          Format.toByte(Format.Json)
+        )
       }
 
       "multiplexing the topic" when {
@@ -46,13 +50,13 @@ class SerializationSpec extends UnitSpec {
 
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
             val serializer = topicMultiplexerSerializer[Any](_ => constSerializer("foo".getBytes(UTF_8))) {
-              case StringTopic => stringSerializer.asInstanceOf[Serializer[Any]]
-              case IntTopic => intSerializer.asInstanceOf[Serializer[Any]]
+              case StringTopic => StringSerializer.asInstanceOf[Serializer[Any]]
+              case IntTopic => IntSerializer.asInstanceOf[Serializer[Any]]
             }
 
             val serialized = serializer.serialize(IntTopic, 56)
 
-            serialized.deep shouldBe intSerializer.serialize("Does not Matter", 56).deep
+            serialized.deep shouldBe IntSerializer.serialize("Does not Matter", 56).deep
           }
         }
 
@@ -64,8 +68,8 @@ class SerializationSpec extends UnitSpec {
 
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
             val serializer = topicMultiplexerSerializer[Any](_ => constSerializer(expectedValue)) {
-              case StringTopic => stringSerializer.asInstanceOf[Serializer[Any]]
-              case IntTopic => intSerializer.asInstanceOf[Serializer[Any]]
+              case StringTopic => StringSerializer.asInstanceOf[Serializer[Any]]
+              case IntTopic => IntSerializer.asInstanceOf[Serializer[Any]]
             }
 
             val serialized = serializer.serialize(IgnoredTopic, 56)
@@ -84,51 +88,65 @@ class SerializationSpec extends UnitSpec {
         "the format does not match" should {
           "use the default deserializer" in {
 
-            val ExpectedFormat = Format.Custom(19)
-            val ExpectedString = "TestString"
+            val expectedFormat = Format.Custom(19)
+            val expectedString = "TestString"
 
-            val d: Deserializer[String] = formatDemultiplexerDeserializer(_ => constDeserializer(ExpectedString)) {
-              case Format.Custom(9) => stringDeserializer
+            val d: Deserializer[String] = formatDemultiplexerDeserializer(_ => constDeserializer(expectedString)) {
+              case Format.Custom(9) => StringDeserializer
               case Format.Custom(8) => constDeserializer("Bad String")
             }
 
-            val deserialized = d.deserialize("test-topic", formatSerializer(ExpectedFormat, stringSerializer).serialize("", ExpectedString))
+            val deserialized = d.deserialize(
+              "test-topic",
+              formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString)
+            )
 
-            deserialized shouldBe ExpectedString
+            deserialized shouldBe expectedString
           }
         }
 
         "dropping format is default" should {
           "drop the magic byte correctly" in {
 
-            val ExpectedFormat = Format.Custom(9)
-            val ExpectedString = "TestString"
+            val expectedFormat = Format.Custom(9)
+            val expectedString = "TestString"
 
-            val d: Deserializer[String] = formatDemultiplexerDeserializer(_ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte"))) {
-              case ExpectedFormat => stringDeserializer
+            val d: Deserializer[String] = formatDemultiplexerDeserializer(
+              _ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte"))
+            ) {
+              case `expectedFormat` => StringDeserializer
               case Format.Custom(8) => constDeserializer("Bad String")
             }
 
-            val deserialized = d.deserialize("test-topic", formatSerializer(ExpectedFormat, stringSerializer).serialize("", ExpectedString))
+            val deserialized = d.deserialize(
+              "test-topic",
+              formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString)
+            )
 
-            deserialized shouldBe ExpectedString
+            deserialized shouldBe expectedString
           }
         }
 
         "dropping format is false" should {
           "not drop the magic byte" in {
 
-            val ExpectedFormat = Format.Custom(9)
-            val ExpectedString = "TestString"
+            val expectedFormat = Format.Custom(9)
+            val expectedString = "TestString"
 
-            val d: Deserializer[String] = formatDemultiplexerDeserializer(_ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte")), dropFormat = false) {
-              case ExpectedFormat => formatCheckingDeserializer(ExpectedFormat, stringDeserializer)
+            val d: Deserializer[String] = formatDemultiplexerDeserializer(
+              _ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte")),
+              dropFormat = false
+            ) {
+              case `expectedFormat` => formatCheckingDeserializer(expectedFormat, StringDeserializer)
               case Format.Custom(8) => constDeserializer("Bad String")
             }
 
-            val deserialized = d.deserialize("test-topic", formatSerializer(ExpectedFormat, stringSerializer).serialize("", ExpectedString))
+            val deserialized = d.deserialize(
+              "test-topic",
+              formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString)
+            )
 
-            deserialized shouldBe ExpectedString
+            deserialized shouldBe expectedString
           }
         }
       }
@@ -136,7 +154,9 @@ class SerializationSpec extends UnitSpec {
       "dropping the magic byte" should {
         "drop the magic byte" in {
           val expectedBytes = "test string".getBytes(UTF_8)
-          val deserializer = formatDroppingDeserializer { data: Array[Byte] => data }
+          val deserializer = formatDroppingDeserializer { data: Array[Byte] =>
+            data
+          }
 
           deserializer.deserialize("test-topic", Array(12: Byte) ++ expectedBytes).deep shouldBe expectedBytes.deep
         }
@@ -151,7 +171,10 @@ class SerializationSpec extends UnitSpec {
 
             val deserializer = formatCheckingDeserializer(Format.Custom(9), constDeserializer(expectedValue))
 
-            val deserialized = deserializer.deserialize(IgnoredTopic, Array(expectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte))
+            val deserialized = deserializer.deserialize(
+              IgnoredTopic,
+              Array(expectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte)
+            )
 
             deserialized shouldBe expectedValue
           }
@@ -164,7 +187,10 @@ class SerializationSpec extends UnitSpec {
 
             val deserializer = formatCheckingDeserializer(Format.Custom(9), constDeserializer("Foo"))
 
-            a[UnsupportedFormatException] should be thrownBy deserializer.deserialize(IgnoredTopic, Array(unexpectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte))
+            a[UnsupportedFormatException] should be thrownBy deserializer.deserialize(
+              IgnoredTopic,
+              Array(unexpectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte)
+            )
 
           }
         }
@@ -206,16 +232,14 @@ class SerializationSpec extends UnitSpec {
 
             val expectedInt = 34
 
-            val StringTopic = "string-topic"
-            val IntTopic = "int-topic"
-
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
-            val deserializer = topicDemultiplexerDeserializer[Any](topic => failingDeserializer(new IllegalArgumentException(topic))) {
-              case StringTopic => stringDeserializer.asInstanceOf[Deserializer[Any]]
-              case IntTopic => intDeserializer.asInstanceOf[Deserializer[Any]]
-            }
+            val deserializer =
+              topicDemultiplexerDeserializer[Any](topic => failingDeserializer(new IllegalArgumentException(topic))) {
+                case StringTopic => StringDeserializer.asInstanceOf[Deserializer[Any]]
+                case IntTopic => IntDeserializer.asInstanceOf[Deserializer[Any]]
+              }
 
-            val deserialized = deserializer.deserialize(IntTopic, intSerializer.serialize(IgnoredTopic, expectedInt))
+            val deserialized = deserializer.deserialize(IntTopic, IntSerializer.serialize(IgnoredTopic, expectedInt))
 
             deserialized shouldBe expectedInt
           }
@@ -224,22 +248,19 @@ class SerializationSpec extends UnitSpec {
         "the topic does not match any branch" should {
           "use the non matching deserializer" in {
 
-            val NonMatchingTopic = "test-topic"
+            val nonMatchingTopic = "test-topic"
 
-            val StringTopic = "string-topic"
-            val IntTopic = "int-topic"
-
-            val ExpectedValue = "test-value"
+            val expectedValue = "test-value"
 
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
-            val deserializer = topicDemultiplexerDeserializer[Any](_ => constDeserializer(ExpectedValue)) {
-              case StringTopic => stringDeserializer.asInstanceOf[Deserializer[Any]]
-              case IntTopic => intDeserializer.asInstanceOf[Deserializer[Any]]
+            val deserializer = topicDemultiplexerDeserializer[Any](_ => constDeserializer(expectedValue)) {
+              case StringTopic => StringDeserializer.asInstanceOf[Deserializer[Any]]
+              case IntTopic => IntDeserializer.asInstanceOf[Deserializer[Any]]
             }
 
-            val deserialized = deserializer.deserialize(NonMatchingTopic, intSerializer.serialize(IgnoredTopic, 45))
+            val deserialized = deserializer.deserialize(nonMatchingTopic, IntSerializer.serialize(IgnoredTopic, 45))
 
-            deserialized shouldBe ExpectedValue
+            deserialized shouldBe expectedValue
           }
         }
 
@@ -247,6 +268,5 @@ class SerializationSpec extends UnitSpec {
 
     }
   }
-
 
 }

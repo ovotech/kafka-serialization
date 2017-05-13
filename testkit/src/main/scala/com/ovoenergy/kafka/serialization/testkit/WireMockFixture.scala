@@ -5,8 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
-trait WireMockFixture extends BeforeAndAfterAll with BeforeAndAfterEach {
-  self: Suite =>
+trait WireMockFixture extends BeforeAndAfterAll with BeforeAndAfterEach { self: Suite =>
 
   private lazy val wireMockServer: WireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort())
 
@@ -35,7 +34,7 @@ trait WireMockFixture extends BeforeAndAfterAll with BeforeAndAfterEach {
     resetWireMock()
   }
 
-  def resetWireMock(): Unit ={
+  def resetWireMock(): Unit = {
     wireMockServer.resetMappings()
     wireMockServer.resetRequests()
     wireMockServer.resetScenarios()

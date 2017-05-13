@@ -1,21 +1,18 @@
 package com.ovoenergy.kafka.serialization.circe
 
-import java.nio.charset.StandardCharsets
+import java.nio.charset.StandardCharsets.UTF_8
 
 import com.ovoenergy.kafka.serialization.testkit.UnitSpec
+import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 
 class CirceSerializationSpec extends UnitSpec with CirceSerialization {
 
-  import StandardCharsets.UTF_8
-  import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
-
   "CirceSerialization" when {
     "serializing" should {
       "write the Json body" in forAll { event: Event =>
-
         val serializer = circeJsonSerializer[Event]
         val bytes = serializer.serialize("Does not matter", event)
 
@@ -25,7 +22,6 @@ class CirceSerializationSpec extends UnitSpec with CirceSerialization {
 
     "deserializing" should {
       "parse the json" in forAll { event: Event =>
-
         val jsonBytes = event.asJson.noSpaces.getBytes(UTF_8)
         val deserializer = circeJsonDeserializer[Event]
 
