@@ -10,11 +10,9 @@ import io.circe.syntax._
 
 class CirceSerializationSpec extends UnitSpec with CirceSerialization {
 
-
   "CirceSerialization" when {
     "serializing" should {
       "write the Json body" in forAll { event: Event =>
-
         val serializer = circeJsonSerializer[Event]
         val bytes = serializer.serialize("Does not matter", event)
 
@@ -24,7 +22,6 @@ class CirceSerializationSpec extends UnitSpec with CirceSerialization {
 
     "deserializing" should {
       "parse the json" in forAll { event: Event =>
-
         val jsonBytes = event.asJson.noSpaces.getBytes(UTF_8)
         val deserializer = circeJsonDeserializer[Event]
 

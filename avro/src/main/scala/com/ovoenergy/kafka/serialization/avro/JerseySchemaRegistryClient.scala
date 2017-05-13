@@ -24,8 +24,9 @@ import scala.util.{Failure, Try}
   *
   * It implements only a subset of the [[SchemaRegistryClient]] interface.
   */
-class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends SchemaRegistryClient with AutoCloseable {
-
+class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
+    extends SchemaRegistryClient
+    with AutoCloseable {
 
   // This cache the schema id by subject and schema
   private val subjectSchemaCache: LoadingCache[SchemaCacheKey, java.lang.Integer] = CacheBuilder
@@ -34,13 +35,16 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends
     .concurrencyLevel(settings.cacheParallelism)
     .build(new CacheLoader[SchemaCacheKey, java.lang.Integer] {
       override def load(key: SchemaCacheKey): java.lang.Integer = {
-        val entity = Json.createObjectBuilder()
+        val entity = Json
+          .createObjectBuilder()
           .add("schema", key.schema.toString)
           .build()
 
-        processResponse(subjectVersions(key.subject)
-          .request()
-          .post(Entity.entity(entity, "application/vnd.schemaregistry.v1+json"))) { response =>
+        processResponse(
+          subjectVersions(key.subject)
+            .request()
+            .post(Entity.entity(entity, "application/vnd.schemaregistry.v1+json"))
+        ) { response =>
           response.readEntity(classOf[JsonObject]).getInt("id")
         }
       }
@@ -52,14 +56,15 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends
     .maximumSize(settings.maxCacheSize)
     .concurrencyLevel(settings.cacheParallelism)
     .build(new CacheLoader[java.lang.Integer, Schema] {
-      override def load(id: java.lang.Integer): Schema = {
-        processResponse(schemas
-          .path(id.toString)
-          .request()
-          .get()) { response =>
+      override def load(id: java.lang.Integer): Schema =
+        processResponse(
+          schemas
+            .path(id.toString)
+            .request()
+            .get()
+        ) { response =>
           new Schema.Parser().parse(response.readEntity(classOf[JsonObject]).getString("schema"))
         }
-      }
     })
 
   private val client: Client = {
@@ -88,28 +93,38 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends
       .path(subject)
       .path("versions")
 
-  override def getAllSubjects: util.Collection[String] = {
-    processResponse(subjects
-      .request()
-      .get()) { response =>
-      response.readEntity(classOf[JsonArray]).getValuesAs(classOf[JsonString]).asScala.map(_.getString).asJavaCollection
+  override def getAllSubjects: util.Collection[String] =
+    processResponse(
+      subjects
+        .request()
+        .get()
+    ) { response =>
+      response
+        .readEntity(classOf[JsonArray])
+        .getValuesAs(classOf[JsonString])
+        .asScala
+        .map(_.getString)
+        .asJavaCollection
     }
-  }
 
   override def getBySubjectAndID(subject: String, id: Int): Schema =
     getByID(id)
 
-  override def register(subject: String, schema: Schema): Int = Try {
-    subjectSchemaCache.get(SchemaCacheKey(subject, schema))
-  }.recoverWith {
-    case e: ExecutionException => Failure(e.getCause)
-  }.fold(error => throw error, int => int)
+  override def register(subject: String, schema: Schema): Int =
+    Try {
+      subjectSchemaCache.get(SchemaCacheKey(subject, schema))
+    }.recoverWith {
+        case e: ExecutionException => Failure(e.getCause)
+      }
+      .fold(error => throw error, int => int)
 
-  override def getByID(id: Int): Schema = Try {
-    schemaCache.get(id)
-  }.recoverWith {
-    case e: ExecutionException => Failure(e.getCause)
-  }.fold(error => throw error, identity)
+  override def getByID(id: Int): Schema =
+    Try {
+      schemaCache.get(id)
+    }.recoverWith {
+        case e: ExecutionException => Failure(e.getCause)
+      }
+      .fold(error => throw error, identity)
 
   override def getCompatibility(subject: String): String =
     throw new UnsupportedOperationException
@@ -129,17 +144,15 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends
   override def testCompatibility(subject: String, schema: Schema): Boolean =
     throw new UnsupportedOperationException
 
-  override def close(): Unit = {
+  override def close(): Unit =
     client.close()
-  }
 
-  private def processResponse[T](r: Response)(f: Response => T) = {
+  private def processResponse[T](r: Response)(f: Response => T) =
     if (r.getStatus == 200) {
       f(r)
     } else {
       throw parseRestException(r)
     }
-  }
 
   private def parseRestException(response: Response) = {
     val jsonObject = response.readEntity(classOf[JsonObject])
@@ -160,5 +173,6 @@ object JerseySchemaRegistryClient {
 
   }
 
-  def apply(settings: SchemaRegistryClientSettings): JerseySchemaRegistryClient = new JerseySchemaRegistryClient(settings)
+  def apply(settings: SchemaRegistryClientSettings): JerseySchemaRegistryClient =
+    new JerseySchemaRegistryClient(settings)
 }

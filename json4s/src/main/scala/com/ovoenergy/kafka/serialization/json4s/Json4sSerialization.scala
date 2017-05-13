@@ -33,5 +33,4 @@ trait Json4sSerialization {
     read[T](new InputStreamReader(new ByteArrayInputStream(data), StandardCharsets.UTF_8))
   }
 
-
 }

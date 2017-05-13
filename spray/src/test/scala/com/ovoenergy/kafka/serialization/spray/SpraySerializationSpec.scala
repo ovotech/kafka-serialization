@@ -17,11 +17,9 @@ object SpraySerializationSpec {
 
 class SpraySerializationSpec extends UnitSpec with SpraySerialization {
 
-
   "SpraySerialization" when {
     "serializing" should {
       "write the json body" in forAll { event: Event =>
-
         val serializer = spraySerializer[Event]
 
         val bytes = serializer.serialize(IgnoredTopic, event)
@@ -32,7 +30,6 @@ class SpraySerializationSpec extends UnitSpec with SpraySerialization {
 
     "deserializing" should {
       "parse the json" in forAll { event: Event =>
-
         val deserializer = sprayDeserializer[Event]
 
         val bytes = event.toJson.compactPrint.getBytes(UTF_8)

@@ -3,8 +3,7 @@ package com.ovoenergy.kafka.serialization.testkit
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{BeforeAndAfterEach, Suite}
 
-trait ConfigFixture extends BeforeAndAfterEach {
-  self: Suite =>
+trait ConfigFixture extends BeforeAndAfterEach { self: Suite =>
 
   protected def initConfig(): Config = ConfigFactory.load()
 

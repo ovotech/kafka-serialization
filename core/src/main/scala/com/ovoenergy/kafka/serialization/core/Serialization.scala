@@ -1,6 +1,6 @@
 package com.ovoenergy.kafka.serialization.core
 
-import  com.ovoenergy.kafka.serialization.core.syntax._
+import com.ovoenergy.kafka.serialization.core.syntax._
 import java.util
 
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
@@ -22,15 +22,17 @@ private[core] trait Serialization {
     f(t)
   }
 
-  def formatSerializer[T](format: Format, delegate: KafkaSerializer[T]): KafkaSerializer[T] = serializer({ (topic, data) =>
-    Array(format.toByte) ++ delegate.serialize(topic, data)
-  })
+  def formatSerializer[T](format: Format, delegate: KafkaSerializer[T]): KafkaSerializer[T] =
+    serializer({ (topic, data) =>
+      Array(format.toByte) ++ delegate.serialize(topic, data)
+    })
 
-  def topicMultiplexerSerializer[T](noMatchingTopic: String => KafkaSerializer[T])(pf: PartialFunction[String, KafkaSerializer[T]]): KafkaSerializer[T] = {
-    serializer({(topic, data) =>
+  def topicMultiplexerSerializer[T](
+    noMatchingTopic: String => KafkaSerializer[T]
+  )(pf: PartialFunction[String, KafkaSerializer[T]]): KafkaSerializer[T] =
+    serializer({ (topic, data) =>
       pf.applyOrElse[String, KafkaSerializer[T]](topic, noMatchingTopic).serialize(topic, data)
     })
-  }
 
   def identitySerializer: KafkaSerializer[Array[Byte]] = identity[Array[Byte]] _
 
@@ -55,42 +57,49 @@ private[core] trait Serialization {
     f(bytes)
   }
 
-  def formatDroppingDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[T] = deserializer({ (topic, data) =>
-    d.deserialize(topic, data.drop(1))
-  })
+  def formatDroppingDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[T] =
+    deserializer({ (topic, data) =>
+      d.deserialize(topic, data.drop(1))
+    })
 
-  def formatCheckingDeserializer[T](expectedFormat: Format, d: KafkaDeserializer[T], dropFormat: Boolean = true): KafkaDeserializer[T] = deserializer({ (topic, data) =>
-    (if (data.isEmpty) {
-      nullDeserializer[T]
-    } else if (data(0) == Format.toByte(expectedFormat) && dropFormat) {
-      formatDroppingDeserializer(d)
-    } else if (data(0) == Format.toByte(expectedFormat) && !dropFormat) {
-      d
-    } else {
-      failingDeserializer(new UnsupportedFormatException(data(0).toFormat))
-    }).deserialize(topic, data)
-  })
+  def formatCheckingDeserializer[T](expectedFormat: Format,
+                                    d: KafkaDeserializer[T],
+                                    dropFormat: Boolean = true): KafkaDeserializer[T] =
+    deserializer({ (topic, data) =>
+      (if (data.isEmpty) {
+         nullDeserializer[T]
+       } else if (data(0) == Format.toByte(expectedFormat) && dropFormat) {
+         formatDroppingDeserializer(d)
+       } else if (data(0) == Format.toByte(expectedFormat) && !dropFormat) {
+         d
+       } else {
+         failingDeserializer(new UnsupportedFormatException(data(0).toFormat))
+       }).deserialize(topic, data)
+    })
 
-  def formatDemultiplexerDeserializer[T](unknownFormat: Format => KafkaDeserializer[T], dropFormat: Boolean = true)(pf: PartialFunction[Format, KafkaDeserializer[T]]): KafkaDeserializer[T] = {
+  def formatDemultiplexerDeserializer[T](unknownFormat: Format => KafkaDeserializer[T], dropFormat: Boolean = true)(
+    pf: PartialFunction[Format, KafkaDeserializer[T]]
+  ): KafkaDeserializer[T] =
     deserializer({ (topic, data) =>
       val d = pf.applyOrElse[Format, KafkaDeserializer[T]](Format.fromByte(data(0)), unknownFormat)
-      (if(dropFormat) {
-        formatDroppingDeserializer(d)
-      } else {
-        d
-      }).deserialize(topic, data)
+      (if (dropFormat) {
+         formatDroppingDeserializer(d)
+       } else {
+         d
+       }).deserialize(topic, data)
     })
-  }
 
-  def topicDemultiplexerDeserializer[T](noMatchingTopic: String => KafkaDeserializer[T])(pf: PartialFunction[String, KafkaDeserializer[T]]): KafkaDeserializer[T] = {
+  def topicDemultiplexerDeserializer[T](
+    noMatchingTopic: String => KafkaDeserializer[T]
+  )(pf: PartialFunction[String, KafkaDeserializer[T]]): KafkaDeserializer[T] =
     deserializer({ (topic, data) =>
       pf.applyOrElse[String, KafkaDeserializer[T]](topic, noMatchingTopic).deserialize(topic, data)
     })
-  }
 
-  def nonStrictDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[() => T] = deserializer({ (topic, data) =>
-    () => d.deserialize(topic, data)
-  })
+  def nonStrictDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[() => T] =
+    deserializer({ (topic, data) => () =>
+      d.deserialize(topic, data)
+    })
 
   def identityDeserializer: KafkaDeserializer[Array[Byte]] = identity[Array[Byte]] _
 

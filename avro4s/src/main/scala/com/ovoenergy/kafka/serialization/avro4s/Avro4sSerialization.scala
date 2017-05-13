@@ -16,23 +16,25 @@ import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer,
 
 import scala.collection.JavaConverters._
 
-
 private[avro4s] trait Avro4sSerialization {
 
-  def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryEndpoint: String,
+                                                    isKey: Boolean): KafkaDeserializer[T] =
     avroBinarySchemaIdDeserializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
-  }
 
-  def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings,
+                                                    isKey: Boolean): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
     avroBinarySchemaIdDeserializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
   }
 
-  def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
+                                                    isKey: Boolean): KafkaDeserializer[T] =
     avroBinarySchemaIdDeserializer(schemaRegistryClient, isKey, () => Unit)
-  }
 
-  private def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
+  private def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
+                                                            isKey: Boolean,
+                                                            close: () => Unit): KafkaDeserializer[T] = {
 
     val fromRecord = implicitly[FromRecord[T]]
 
@@ -45,19 +47,29 @@ private[avro4s] trait Avro4sSerialization {
     }, close)
   }
 
-  def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] =
+  def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord: SchemaFor](schemaRegistryEndpoint: String,
+                                                                               isKey: Boolean): KafkaDeserializer[T] =
     avroBinarySchemaIdWithReaderSchemaDeserializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
 
-  def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord : SchemaFor](schemaRegistryClientSettings: SchemaRegistryClientSettings, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord: SchemaFor](
+    schemaRegistryClientSettings: SchemaRegistryClientSettings,
+    isKey: Boolean
+  ): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
     avroBinarySchemaIdWithReaderSchemaDeserializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
   }
 
-  def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord : SchemaFor](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord: SchemaFor](
+    schemaRegistryClient: SchemaRegistryClient,
+    isKey: Boolean
+  ): KafkaDeserializer[T] =
     avroBinarySchemaIdWithReaderSchemaDeserializer(schemaRegistryClient, isKey, () => Unit)
-  }
 
-  private def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord : SchemaFor](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
+  private def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord: SchemaFor](
+    schemaRegistryClient: SchemaRegistryClient,
+    isKey: Boolean,
+    close: () => Unit
+  ): KafkaDeserializer[T] = {
 
     val fromRecord = implicitly[FromRecord[T]]
     val schemaFor = implicitly[SchemaFor[T]]
@@ -71,20 +83,22 @@ private[avro4s] trait Avro4sSerialization {
     }, close)
   }
 
-  def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] = {
+  def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] =
     avroBinarySchemaIdSerializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
-  }
 
-  def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings, isKey: Boolean): KafkaSerializer[T] = {
+  def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings,
+                                                isKey: Boolean): KafkaSerializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
     avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
   }
 
-  def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean): KafkaSerializer[T] = {
+  def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
+                                                isKey: Boolean): KafkaSerializer[T] =
     avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => Unit)
-  }
 
-  private def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaSerializer[T] = {
+  private def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
+                                                        isKey: Boolean,
+                                                        close: () => Unit): KafkaSerializer[T] = {
 
     val toRecord = implicitly[ToRecord[T]]
     val kafkaAvroSerializer = new KafkaAvroSerializer(schemaRegistryClient)
@@ -93,7 +107,7 @@ private[avro4s] trait Avro4sSerialization {
 
     serializer({ (topic, t) =>
       val bytes = kafkaAvroSerializer.serialize(topic, toRecord(t))
-      if(bytes != null && bytes.nonEmpty) {
+      if (bytes != null && bytes.nonEmpty) {
         bytes.drop(1)
       } else {
         bytes
@@ -101,22 +115,26 @@ private[avro4s] trait Avro4sSerialization {
     }, close)
   }
 
-  def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryEndpoint: String,
+                                                                  isKey: Boolean): KafkaDeserializer[T] =
     avroJsonSchemaIdDeserializerWithReaderSchema(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
-  }
 
-  def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](
+    schemaRegistryClientSettings: SchemaRegistryClientSettings,
+    isKey: Boolean
+  ): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
     avroJsonSchemaIdDeserializerWithReaderSchema(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
   }
 
-  def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
+                                                                  isKey: Boolean): KafkaDeserializer[T] =
     avroJsonSchemaIdDeserializerWithReaderSchema(schemaRegistryClient, isKey, () => Unit)
-  }
 
-  private def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
+  private def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
+                                                                          isKey: Boolean,
+                                                                          close: () => Unit): KafkaDeserializer[T] =
     formatCheckingDeserializer(Format.AvroJsonSchemaId, deserializer({ (topic, data) =>
-
       val buffer = ByteBuffer.wrap(data)
       val schemaId = buffer.getInt
       val schema = schemaRegistryClient.getByID(schemaId)
@@ -130,24 +148,26 @@ private[avro4s] trait Avro4sSerialization {
       avroIn.singleEntity.get
     }, close))
 
-  }
-
-  def avroJsonSchemaIdDeserializer[T: FromRecord : SchemaFor](schemaRegistryEndpoint: String, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](schemaRegistryEndpoint: String,
+                                                             isKey: Boolean): KafkaDeserializer[T] =
     avroJsonSchemaIdDeserializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
-  }
 
-  def avroJsonSchemaIdDeserializer[T: FromRecord : SchemaFor](schemaRegistryClientSettings: SchemaRegistryClientSettings, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](
+    schemaRegistryClientSettings: SchemaRegistryClientSettings,
+    isKey: Boolean
+  ): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
     avroJsonSchemaIdDeserializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
   }
 
-  def avroJsonSchemaIdDeserializer[T: FromRecord : SchemaFor](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](schemaRegistryClient: SchemaRegistryClient,
+                                                             isKey: Boolean): KafkaDeserializer[T] =
     avroJsonSchemaIdDeserializer(schemaRegistryClient, isKey, () => Unit)
-  }
 
-  private def avroJsonSchemaIdDeserializer[T: FromRecord : SchemaFor](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
+  private def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](schemaRegistryClient: SchemaRegistryClient,
+                                                                     isKey: Boolean,
+                                                                     close: () => Unit): KafkaDeserializer[T] =
     deserializer({ (topic, data) =>
-
       val buffer = ByteBuffer.wrap(data)
       val schemaId = buffer.getInt
       val writerSchema = schemaRegistryClient.getByID(schemaId)
@@ -160,27 +180,27 @@ private[avro4s] trait Avro4sSerialization {
 
       implicitly[FromRecord[T]].apply(readRecord)
     }, close)
-  }
 
-  def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] = {
+  def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String, isKey: Boolean): KafkaSerializer[T] =
     avroJsonSchemaIdSerializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
-  }
 
-  def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings, isKey: Boolean): KafkaSerializer[T] = {
+  def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings,
+                                              isKey: Boolean): KafkaSerializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
     avroJsonSchemaIdSerializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
   }
 
-  def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean): KafkaSerializer[T] = {
+  def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
+                                              isKey: Boolean): KafkaSerializer[T] =
     avroJsonSchemaIdSerializer(schemaRegistryClient, isKey, () => Unit)
-  }
 
-  private def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaSerializer[T] = {
+  private def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
+                                                      isKey: Boolean,
+                                                      close: () => Unit): KafkaSerializer[T] = {
 
     val toRecord: ToRecord[T] = implicitly
 
     serializer({ (topic, t) =>
-
       val record = toRecord(t)
       implicit val schemaFor: SchemaFor[T] = new SchemaFor[T] {
         override def apply(): Schema = record.getSchema

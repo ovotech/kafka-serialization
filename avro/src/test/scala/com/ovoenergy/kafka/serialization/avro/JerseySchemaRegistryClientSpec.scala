@@ -15,7 +15,9 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
   "JerseySchemaRegistryClient" when {
     "fetching a schema" when {
       "the authentication is basic" should {
-        "send authorization header with the given credentials" in withJerseySchemaRegistryClient(SchemaRegistryClientSettings(wireMockEndpoint, "foo", "bar")) { client =>
+        "send authorization header with the given credentials" in withJerseySchemaRegistryClient(
+          SchemaRegistryClientSettings(wireMockEndpoint, "foo", "bar")
+        ) { client =>
           val schemaId = 1
 
           givenSchema(schemaId, schema)
@@ -26,7 +28,7 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
       }
 
       "the authentication is None" should {
-        "do not send authorization header" in withJerseySchemaRegistryClient{ client =>
+        "do not send authorization header" in withJerseySchemaRegistryClient { client =>
           val schemaId = 1
 
           givenSchema(schemaId, schema)
@@ -65,7 +67,9 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
     }
     "registering a schema" when {
       "the authentication is basic" should {
-        "send authorization header with the given credentials" in withJerseySchemaRegistryClient(SchemaRegistryClientSettings(wireMockEndpoint, "foo", "bar")) { client =>
+        "send authorization header with the given credentials" in withJerseySchemaRegistryClient(
+          SchemaRegistryClientSettings(wireMockEndpoint, "foo", "bar")
+        ) { client =>
           givenNextSchemaId("test-subject", 123)
           client.register("test-subject", schema)
 
@@ -74,8 +78,7 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
       }
 
       "the authentication is None" should {
-        "do not send authorization header" in withJerseySchemaRegistryClient{ client =>
-
+        "do not send authorization header" in withJerseySchemaRegistryClient { client =>
           givenNextSchemaId("test-subject", 123)
           client.register("test-subject", schema)
 
@@ -83,13 +86,13 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
         }
       }
 
-      "return the schema id" in withJerseySchemaRegistryClient{ client =>
+      "return the schema id" in withJerseySchemaRegistryClient { client =>
         val schemaId = 321
         givenNextSchemaId("test-subject", schemaId)
         client.register("test-subject", schema) shouldBe schemaId
       }
 
-      "throw an exception in case of error" in withJerseySchemaRegistryClient{ client =>
+      "throw an exception in case of error" in withJerseySchemaRegistryClient { client =>
         givenNextError(500, 123, "Error")
         a[RestClientException] should be thrownBy client.register("test-subject", schema)
       }
@@ -107,8 +110,9 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
   def withJerseySchemaRegistryClient[T](f: JerseySchemaRegistryClient => T): T =
     withJerseySchemaRegistryClient()(f)
 
-
-  def withJerseySchemaRegistryClient[T](settings: SchemaRegistryClientSettings = SchemaRegistryClientSettings(wireMockEndpoint))(f: JerseySchemaRegistryClient => T): T =
+  def withJerseySchemaRegistryClient[T](settings: SchemaRegistryClientSettings = SchemaRegistryClientSettings(
+                                          wireMockEndpoint
+                                        ))(f: JerseySchemaRegistryClient => T): T =
     resource.managed(JerseySchemaRegistryClient(settings)).acquireAndGet(f)
 
 }

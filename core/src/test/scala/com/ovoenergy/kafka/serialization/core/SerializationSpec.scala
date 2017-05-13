@@ -31,7 +31,6 @@ object SerializationSpec {
   }
 }
 
-
 class SerializationSpec extends UnitSpec {
 
   "Serialization" when {
@@ -39,7 +38,9 @@ class SerializationSpec extends UnitSpec {
     "serializing" when {
 
       "add the magic byte to the serialized data" in {
-        formatSerializer(Format.Json, StringSerializer).serialize("test", "Test")(0) should be(Format.toByte(Format.Json))
+        formatSerializer(Format.Json, StringSerializer).serialize("test", "Test")(0) should be(
+          Format.toByte(Format.Json)
+        )
       }
 
       "multiplexing the topic" when {
@@ -95,7 +96,10 @@ class SerializationSpec extends UnitSpec {
               case Format.Custom(8) => constDeserializer("Bad String")
             }
 
-            val deserialized = d.deserialize("test-topic", formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString))
+            val deserialized = d.deserialize(
+              "test-topic",
+              formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString)
+            )
 
             deserialized shouldBe expectedString
           }
@@ -107,12 +111,17 @@ class SerializationSpec extends UnitSpec {
             val expectedFormat = Format.Custom(9)
             val expectedString = "TestString"
 
-            val d: Deserializer[String] = formatDemultiplexerDeserializer(_ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte"))) {
+            val d: Deserializer[String] = formatDemultiplexerDeserializer(
+              _ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte"))
+            ) {
               case `expectedFormat` => StringDeserializer
               case Format.Custom(8) => constDeserializer("Bad String")
             }
 
-            val deserialized = d.deserialize("test-topic", formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString))
+            val deserialized = d.deserialize(
+              "test-topic",
+              formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString)
+            )
 
             deserialized shouldBe expectedString
           }
@@ -124,12 +133,18 @@ class SerializationSpec extends UnitSpec {
             val expectedFormat = Format.Custom(9)
             val expectedString = "TestString"
 
-            val d: Deserializer[String] = formatDemultiplexerDeserializer(_ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte")), dropFormat = false) {
+            val d: Deserializer[String] = formatDemultiplexerDeserializer(
+              _ => failingDeserializer[String](new RuntimeException("Wrong or unsupported serialization format byte")),
+              dropFormat = false
+            ) {
               case `expectedFormat` => formatCheckingDeserializer(expectedFormat, StringDeserializer)
               case Format.Custom(8) => constDeserializer("Bad String")
             }
 
-            val deserialized = d.deserialize("test-topic", formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString))
+            val deserialized = d.deserialize(
+              "test-topic",
+              formatSerializer(expectedFormat, StringSerializer).serialize("", expectedString)
+            )
 
             deserialized shouldBe expectedString
           }
@@ -139,7 +154,9 @@ class SerializationSpec extends UnitSpec {
       "dropping the magic byte" should {
         "drop the magic byte" in {
           val expectedBytes = "test string".getBytes(UTF_8)
-          val deserializer = formatDroppingDeserializer { data: Array[Byte] => data }
+          val deserializer = formatDroppingDeserializer { data: Array[Byte] =>
+            data
+          }
 
           deserializer.deserialize("test-topic", Array(12: Byte) ++ expectedBytes).deep shouldBe expectedBytes.deep
         }
@@ -154,7 +171,10 @@ class SerializationSpec extends UnitSpec {
 
             val deserializer = formatCheckingDeserializer(Format.Custom(9), constDeserializer(expectedValue))
 
-            val deserialized = deserializer.deserialize(IgnoredTopic, Array(expectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte))
+            val deserialized = deserializer.deserialize(
+              IgnoredTopic,
+              Array(expectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte)
+            )
 
             deserialized shouldBe expectedValue
           }
@@ -167,7 +187,10 @@ class SerializationSpec extends UnitSpec {
 
             val deserializer = formatCheckingDeserializer(Format.Custom(9), constDeserializer("Foo"))
 
-            a[UnsupportedFormatException] should be thrownBy deserializer.deserialize(IgnoredTopic, Array(unexpectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte))
+            a[UnsupportedFormatException] should be thrownBy deserializer.deserialize(
+              IgnoredTopic,
+              Array(unexpectedFormat.toByte) ++ Array.fill(5)(Random.nextInt().toByte)
+            )
 
           }
         }
@@ -210,10 +233,11 @@ class SerializationSpec extends UnitSpec {
             val expectedInt = 34
 
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
-            val deserializer = topicDemultiplexerDeserializer[Any](topic => failingDeserializer(new IllegalArgumentException(topic))) {
-              case StringTopic => StringDeserializer.asInstanceOf[Deserializer[Any]]
-              case IntTopic => IntDeserializer.asInstanceOf[Deserializer[Any]]
-            }
+            val deserializer =
+              topicDemultiplexerDeserializer[Any](topic => failingDeserializer(new IllegalArgumentException(topic))) {
+                case StringTopic => StringDeserializer.asInstanceOf[Deserializer[Any]]
+                case IntTopic => IntDeserializer.asInstanceOf[Deserializer[Any]]
+              }
 
             val deserialized = deserializer.deserialize(IntTopic, IntSerializer.serialize(IgnoredTopic, expectedInt))
 
@@ -244,6 +268,5 @@ class SerializationSpec extends UnitSpec {
 
     }
   }
-
 
 }

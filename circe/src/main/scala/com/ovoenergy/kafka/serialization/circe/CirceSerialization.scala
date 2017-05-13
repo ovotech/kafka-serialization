@@ -9,7 +9,7 @@ import io.circe.syntax._
 import io.circe.{Decoder, Encoder, Error, Json}
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
 
-private[circe] trait CirceSerialization  {
+private[circe] trait CirceSerialization {
 
   def circeJsonSerializer[T: Encoder]: KafkaSerializer[T] = serializer { (_, data) =>
     data.asJson.noSpaces.getBytes(StandardCharsets.UTF_8)
@@ -19,7 +19,8 @@ private[circe] trait CirceSerialization  {
     (for {
       json <- parse(new String(data, StandardCharsets.UTF_8)): Either[Error, Json]
       t <- json.as[T]: Either[Error, T]
-    } yield t).fold(error => throw new RuntimeException(s"Deserialization failure: ${error.getMessage}", error), identity _)
+    } yield
+      t).fold(error => throw new RuntimeException(s"Deserialization failure: ${error.getMessage}", error), identity _)
   }
 
 }

@@ -75,8 +75,8 @@ object Dependencies {
 
     private val version = "0.10.2.1"
 
-    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "3.1.1" exclude("org.slf4j", "slf4j-log4j12")
-    val client = "org.apache.kafka" % "kafka-clients" % version exclude("org.slf4j", "slf4j-log4j12")
+    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "3.1.1" exclude ("org.slf4j", "slf4j-log4j12")
+    val client = "org.apache.kafka" % "kafka-clients" % version exclude ("org.slf4j", "slf4j-log4j12")
   }
 
   object Circe {
@@ -138,7 +138,13 @@ object Dependencies {
 
   val json4s = l ++= Seq(Json4s.core, Json4s.native)
 
-  val avro = l ++= Seq(kafka.avroSerializer, Jersey.client, Jersey.nettyConnector, Jersey.jsonProcessing, scalaArm % Test)
+  val avro = l ++= Seq(
+    kafka.avroSerializer,
+    Jersey.client,
+    Jersey.nettyConnector,
+    Jersey.jsonProcessing,
+    scalaArm % Test
+  )
 
   val avro4s = l ++= Seq(Avro4s.core, kafka.avroSerializer)
 
@@ -146,7 +152,15 @@ object Dependencies {
 
   val spray = l ++= Seq(Spray.json)
 
-  val testkit = l ++= Seq(Akka.testKit, scalaTest.scalaTest, scalaCheck.scalaCheck, Typesafe.config, scalaMock.scalaTestSupport, logback.classic, Wiremock.wiremock)
+  val testkit = l ++= Seq(
+    Akka.testKit,
+    scalaTest.scalaTest,
+    scalaCheck.scalaCheck,
+    Typesafe.config,
+    scalaMock.scalaTestSupport,
+    logback.classic,
+    Wiremock.wiremock
+  )
 
   val doc = l ++= Seq(Circe.generic % "tut")
 }
