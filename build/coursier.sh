@@ -2,6 +2,9 @@
 
 set -e
 
+echo 'Installing coursier'
+curl -L -o /usr/local/bin/coursier https://git.io/vgvpD && chmod +x /usr/local/bin/coursier
+
 echo 'Adding coursier plugin to sbt'
 mkdir -p $HOME/.sbt/0.13/plugins
 echo 'addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-RC2")' > $HOME/.sbt/0.13/plugins/coursier.sbt

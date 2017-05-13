@@ -14,7 +14,7 @@ import org.apache.avro.Schema
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature
 
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 /**
   * Implements the [[SchemaRegistryClient]] interface using Jersey client.
@@ -114,17 +114,21 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
     Try {
       subjectSchemaCache.get(SchemaCacheKey(subject, schema))
     }.recoverWith {
-        case e: ExecutionException => Failure(e.getCause)
-      }
-      .fold(error => throw error, int => int)
+      case e: ExecutionException => Failure(e.getCause)
+    } match {
+      case Failure(e) => throw e
+      case Success(int) => int
+    }
 
   override def getByID(id: Int): Schema =
     Try {
       schemaCache.get(id)
     }.recoverWith {
-        case e: ExecutionException => Failure(e.getCause)
-      }
-      .fold(error => throw error, identity)
+      case e: ExecutionException => Failure(e.getCause)
+    } match {
+      case Failure(e) => throw e
+      case Success(schema) => schema
+    }
 
   override def getCompatibility(subject: String): String =
     throw new UnsupportedOperationException

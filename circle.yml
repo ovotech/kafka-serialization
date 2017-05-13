@@ -13,6 +13,7 @@ machine:
 dependencies:
   pre:
     - build/coursier.sh
+    - build/scalafmt.sh
     - build/bintray.sh
   cache_directories:
     - "~/.ivy2"
@@ -27,6 +28,7 @@ test:
   pre:
   - echo "concurrentRestrictions in Global += Tags.limit(Tags.Test, 2)" > parallelism.sbt
   override:
+  - scalafmt --test
   - sbt +test:test
   post:
   - mkdir -p $CIRCLE_TEST_REPORTS/junit/

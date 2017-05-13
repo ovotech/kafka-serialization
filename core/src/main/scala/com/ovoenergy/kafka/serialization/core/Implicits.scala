@@ -3,6 +3,9 @@ package com.ovoenergy.kafka.serialization.core
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
 import scala.language.implicitConversions
 
+/**
+  * Provides implicit conversion between functions and Kafka serializer/deserializer.
+  */
 trait Implicits {
 
   implicit def function2Serializer[T](f: (String, T) => Array[Byte]): KafkaSerializer[T] = serializer(f)
