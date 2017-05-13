@@ -8,14 +8,14 @@ trait ConfigFixture extends BeforeAndAfterEach {
 
   protected def initConfig(): Config = ConfigFactory.load()
 
-  private var _config: Config = _
+  private var mutableConfig: Config = _
 
-  def optionalConfig = Option(_config)
+  def optionalConfig = Option(mutableConfig)
 
-  def config: Config = optionalConfig.getOrElse(throw new IllegalStateException("Config not yet initialized"))
+  def config: Config = optionalConfig.getOrElse(throw new IllegalStateException("Config is not yet initialized"))
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    _config = initConfig()
+    mutableConfig = initConfig()
   }
 }

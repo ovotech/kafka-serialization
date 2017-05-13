@@ -1,17 +1,17 @@
 package com.ovoenergy.kafka.serialization.avro
 
 import java.util
-import java.util.concurrent.{Callable, ExecutionException}
+import java.util.concurrent.ExecutionException
 import javax.json.{Json, JsonArray, JsonObject, JsonString}
-import javax.ws.rs.client._
+import javax.ws.rs.client.{Client, ClientBuilder, Entity}
 import javax.ws.rs.core.Response
 
+import com.ovoenergy.kafka.serialization.avro.JerseySchemaRegistryClient._
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException
 import io.confluent.kafka.schemaregistry.client.{SchemaMetadata, SchemaRegistryClient}
-import jersey.repackaged.com.google.common.cache.{Cache, CacheBuilder, CacheLoader, LoadingCache}
+import jersey.repackaged.com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 import org.apache.avro.Schema
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature
-import javax.ws.rs.client.ClientBuilder
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Try}
@@ -26,7 +26,6 @@ import scala.util.{Failure, Try}
   */
 class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends SchemaRegistryClient with AutoCloseable {
 
-  import JerseySchemaRegistryClient._
 
   // This cache the schema id by subject and schema
   private val subjectSchemaCache: LoadingCache[SchemaCacheKey, java.lang.Integer] = CacheBuilder
@@ -80,7 +79,6 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends
     builder.build()
   }
 
-
   private val root = client.target(settings.endpoint)
   private val subjects = root.path("subjects")
   private val schemas = root.path("schemas").path("ids")
@@ -105,13 +103,13 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings) extends
     subjectSchemaCache.get(SchemaCacheKey(subject, schema))
   }.recoverWith {
     case e: ExecutionException => Failure(e.getCause)
-  }.get
+  }.fold(error => throw error, int => int)
 
   override def getByID(id: Int): Schema = Try {
     schemaCache.get(id)
   }.recoverWith {
     case e: ExecutionException => Failure(e.getCause)
-  }.get
+  }.fold(error => throw error, identity)
 
   override def getCompatibility(subject: String): String =
     throw new UnsupportedOperationException
@@ -156,7 +154,7 @@ object JerseySchemaRegistryClient {
     // The schema need to be compared by reference as it is mutable.
     override def equals(obj: scala.Any): Boolean = obj match {
       case that: SchemaCacheKey =>
-          this.subject == that.subject && this.schema.eq(that.schema)
+        this.subject == that.subject && this.schema.eq(that.schema)
       case _ => false
     }
 

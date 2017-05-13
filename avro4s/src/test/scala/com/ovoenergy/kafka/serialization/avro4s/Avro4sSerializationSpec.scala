@@ -3,7 +3,9 @@ package com.ovoenergy.kafka.serialization.avro4s
 import java.io.{ByteArrayOutputStream, OutputStream}
 import java.nio.ByteBuffer
 
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock._
+import com.ovoenergy.kafka.serialization.avro4s.Avro4sSerializationSpec._
+import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
 import com.ovoenergy.kafka.serialization.testkit.{UnitSpec, WireMockFixture}
 import com.sksamuel.avro4s.{AvroOutputStream, FromRecord, SchemaFor, ToRecord}
 import org.apache.avro.Schema
@@ -12,17 +14,17 @@ object Avro4sSerializationSpec {
 
   import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
 
-  implicit val eventToRecord: ToRecord[Event] = ToRecord[Event]
+  implicit val EventToRecord: ToRecord[Event] = ToRecord[Event]
+
+  implicit val EventFromRecord: FromRecord[Event] = FromRecord[Event]
+
+  implicit val EventSchemaFor: SchemaFor[Event] = SchemaFor[Event]
+
 }
 
 class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
 
-  import Avro4sSerializationSpec._
-  import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
-  import WireMock._
 
-  implicit val eventFromRecord: FromRecord[Event] = FromRecord[Event]
-  implicit val eventSchemaFor: SchemaFor[Event] = SchemaFor[Event]
 
   "Avro4sSerialization" when {
     "serializing binary" when {
@@ -99,7 +101,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
 
           val bytes = asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, eventSchemaFor())
+          givenSchema(schemaId, EventSchemaFor())
 
           val deserialized = deserializer.deserialize(topic, bytes)
           deserialized shouldBe event
@@ -113,7 +115,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
           val deserializer = avroBinarySchemaIdDeserializer(wireMockEndpoint, isKey = false)
           val bytes = asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, eventSchemaFor())
+          givenSchema(schemaId, EventSchemaFor())
 
           deserializer.deserialize(topic, bytes)
           deserializer.deserialize(topic, bytes)
@@ -130,7 +132,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
           val deserializer = avroJsonSchemaIdDeserializer(wireMockEndpoint, isKey = false)
           val bytes = asAvroJsonWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, eventSchemaFor())
+          givenSchema(schemaId, EventSchemaFor())
 
           val deserialized = deserializer.deserialize(topic, bytes)
 
@@ -145,7 +147,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
           val deserializer = avroJsonSchemaIdDeserializer(wireMockEndpoint, isKey = false)
           val bytes = asAvroJsonWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, eventSchemaFor())
+          givenSchema(schemaId, EventSchemaFor())
 
           deserializer.deserialize(topic, bytes)
           deserializer.deserialize(topic, bytes)

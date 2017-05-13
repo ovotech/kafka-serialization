@@ -2,13 +2,13 @@ package com.ovoenergy.kafka.serialization.avro
 
 import javax.ws.rs.core.HttpHeaders
 
-import com.github.tomakehurst.wiremock.client.{BasicCredentials, WireMock}
+import com.github.tomakehurst.wiremock.client.BasicCredentials
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.ovoenergy.kafka.serialization.testkit.{UnitSpec, WireMockFixture}
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException
 import org.apache.avro.{Schema, SchemaBuilder}
-class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with SchemaRegistryFixture {
 
-  import WireMock._
+class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with SchemaRegistryFixture {
 
   val schema: Schema = SchemaBuilder.record("Foo").fields().nullableBoolean("foo", false).endRecord()
 
@@ -69,8 +69,6 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
           givenNextSchemaId("test-subject", 123)
           client.register("test-subject", schema)
 
-          import WireMock._
-
           verify(postRequestedFor(anyUrl()).withBasicAuth(new BasicCredentials("foo", "bar")))
         }
       }
@@ -80,8 +78,6 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
 
           givenNextSchemaId("test-subject", 123)
           client.register("test-subject", schema)
-
-          import WireMock._
 
           verify(postRequestedFor(anyUrl()).withoutHeader(HttpHeaders.AUTHORIZATION))
         }

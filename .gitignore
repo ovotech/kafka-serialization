@@ -1,7 +1,18 @@
-# Created by .ignore support plugin (hsz.mobi)
+# Idea IDE related
 .idea/
 .idea_modules/
+*.iml
 
+# Ensime
+.ensime
+.ensime_cache/
+
+# Sbt
 target/
+.history
 
+# Mac OSX
 .DS_Store
+
+# Project specific
+test.log

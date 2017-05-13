@@ -5,13 +5,17 @@ import java.nio.ByteBuffer
 
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream
 import com.ovoenergy.kafka.serialization.avro.{JerseySchemaRegistryClient, SchemaRegistryClientSettings}
+import com.ovoenergy.kafka.serialization.core._
 import com.sksamuel.avro4s._
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
+import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericDatumReader, GenericDatumWriter, GenericRecord}
 import org.apache.avro.io.{DecoderFactory, EncoderFactory}
 import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer, Serializer => KafkaSerializer}
-import com.ovoenergy.kafka.serialization.core._
+
+import scala.collection.JavaConverters._
+
 
 private[avro4s] trait Avro4sSerialization {
 
@@ -29,7 +33,6 @@ private[avro4s] trait Avro4sSerialization {
   }
 
   private def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
-    import scala.collection.JavaConverters._
 
     val fromRecord = implicitly[FromRecord[T]]
 
@@ -55,7 +58,6 @@ private[avro4s] trait Avro4sSerialization {
   }
 
   private def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord : SchemaFor](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaDeserializer[T] = {
-    import scala.collection.JavaConverters._
 
     val fromRecord = implicitly[FromRecord[T]]
     val schemaFor = implicitly[SchemaFor[T]]
@@ -83,7 +85,6 @@ private[avro4s] trait Avro4sSerialization {
   }
 
   private def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient, isKey: Boolean, close: () => Unit): KafkaSerializer[T] = {
-    import scala.collection.JavaConverters._
 
     val toRecord = implicitly[ToRecord[T]]
     val kafkaAvroSerializer = new KafkaAvroSerializer(schemaRegistryClient)
@@ -121,7 +122,7 @@ private[avro4s] trait Avro4sSerialization {
       val schema = schemaRegistryClient.getByID(schemaId)
 
       implicit val schemaFor: SchemaFor[T] = new SchemaFor[T] {
-        override def apply() = schema
+        override def apply(): Schema = schema
       }
 
       val avroIn = AvroJsonInputStream[T](new ByteBufferBackedInputStream(buffer))
@@ -182,7 +183,7 @@ private[avro4s] trait Avro4sSerialization {
 
       val record = toRecord(t)
       implicit val schemaFor: SchemaFor[T] = new SchemaFor[T] {
-        override def apply() = record.getSchema
+        override def apply(): Schema = record.getSchema
       }
 
       val schemaId = schemaRegistryClient.register(s"$topic-${if (isKey) "key" else "value"}", record.getSchema)

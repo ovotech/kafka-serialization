@@ -1,16 +1,15 @@
 package com.ovoenergy.kafka.serialization.circe
 
-import java.nio.charset.StandardCharsets
+import java.nio.charset.StandardCharsets.UTF_8
 
 import com.ovoenergy.kafka.serialization.testkit.UnitSpec
+import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 
 class CirceSerializationSpec extends UnitSpec with CirceSerialization {
 
-  import StandardCharsets.UTF_8
-  import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
 
   "CirceSerialization" when {
     "serializing" should {

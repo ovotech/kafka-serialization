@@ -1,14 +1,13 @@
 package com.ovoenergy.kafka.serialization.avro
 
-import org.scalatest.{BeforeAndAfterEach, Suite}
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock._
 import com.ovoenergy.kafka.serialization.testkit.WireMockFixture
 import org.apache.avro.Schema
+import org.scalatest.{BeforeAndAfterEach, Suite}
 
 trait SchemaRegistryFixture extends BeforeAndAfterEach {
   _: Suite with WireMockFixture =>
 
-  import WireMock._
 
   def schemaRegistryEndpoint: String = wireMockEndpoint
 
