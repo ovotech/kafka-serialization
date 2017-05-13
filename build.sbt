@@ -16,6 +16,7 @@ lazy val doc = project
   .settings(
     name := "kafka-serialization-doc",
     publishArtifact := false,
+    publish := {},
     tutTargetDirectory := (baseDirectory.value).getParentFile
   )
   .settings(Dependencies.doc)
@@ -24,7 +25,7 @@ lazy val testkit = project
   .in(file("testkit"))
   .enablePlugins(GitVersioning, GitBranchPrompt, ScalafmtPlugin)
   .settings(Shared.settings: _*)
-  .settings(name := "kafka-serialization-testkit", publishArtifact := false)
+  .settings(name := "kafka-serialization-testkit", publishArtifact := false, publish := {})
   .settings(Dependencies.testkit)
   .settings(Git.settings: _*)
 
