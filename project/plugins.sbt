@@ -8,7 +8,7 @@ addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 // addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.4.0")
 
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.1")
-addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "0.3")
+addSbtPlugin("com.lucidchart" % "sbt-scalafmt-coursier" % "1.7")
 
 // To resolve custom bintray-sbt plugin
 resolvers += Resolver.url("2m-sbt-plugin-releases", url("https://dl.bintray.com/2m/sbt-plugin-releases/"))(
