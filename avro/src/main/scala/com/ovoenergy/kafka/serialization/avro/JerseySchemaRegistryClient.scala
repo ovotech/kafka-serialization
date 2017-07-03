@@ -29,7 +29,7 @@ import scala.util.control.NonFatal
 class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
     extends SchemaRegistryClient
     with AutoCloseable {
-  
+
   private val logger = LoggerFactory.getLogger(getClass)
 
   // This cache the schema id by subject and schema
@@ -155,7 +155,7 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
   override def close(): Unit =
     client.close()
 
-  private def processResponse[T](r: Response)(f: Response => T) = {
+  private def processResponse[T](r: Response)(f: Response => T) =
     try {
       if (r.getStatus == 200) {
         f(r)
@@ -165,7 +165,6 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
     } finally {
       r.close()
     }
-  }
 
   private def parseRestException(response: Response) = {
     response.bufferEntity() // so we can read it more than once
@@ -173,10 +172,16 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
       val jsonObject = response.readEntity(classOf[JsonObject])
       new RestClientException(jsonObject.getString("message"), response.getStatus, jsonObject.getInt("error_code"))
     } catch {
-      case NonFatal(_) => 
+      case NonFatal(_) =>
         val truncatedResponseBody = response.readEntity(classOf[String]).take(10000).mkString
-        logger.warn("Schema registry returned a non-JSON.response. Status: ${response.getStatus}. Response (truncated): $truncatedResponseBody")
-        new RestClientException("Server returned a non-JSON response. See the logs for details.", response.getStatus, -1)
+        logger.warn(
+          "Schema registry returned a non-JSON.response. Status: ${response.getStatus}. Response (truncated): $truncatedResponseBody"
+        )
+        new RestClientException(
+          "Server returned a non-JSON response. See the logs for details.",
+          response.getStatus,
+          -1
+        )
     }
   }
 }
