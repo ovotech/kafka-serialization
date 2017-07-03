@@ -97,4 +97,15 @@ trait SchemaRegistryFixture extends BeforeAndAfterEach { _: Suite with WireMockF
         )
     )
 
+  def givenHtmlResponse(status: Int, body: String): Unit =
+    stubFor(
+      any(anyUrl())
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+            .withBody(body)
+            .withHeader("Content-Type", "text/html")
+        )
+    )
+
 }

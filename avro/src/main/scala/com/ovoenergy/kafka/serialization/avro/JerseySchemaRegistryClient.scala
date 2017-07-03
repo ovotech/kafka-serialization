@@ -15,6 +15,7 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 
 /**
   * Implements the [[SchemaRegistryClient]] interface using Jersey client.
@@ -159,8 +160,12 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
     }
 
   private def parseRestException(response: Response) = {
-    val jsonObject = response.readEntity(classOf[JsonObject])
-    new RestClientException(jsonObject.getString("message"), response.getStatus, jsonObject.getInt("error_code"))
+    try {
+      val jsonObject = response.readEntity(classOf[JsonObject])
+      new RestClientException(jsonObject.getString("message"), response.getStatus, jsonObject.getInt("error_code"))
+    } catch {
+      case NonFatal(_) => new RestClientException("Server returned a non-JSON response", response.getStatus, -1)
+    }
   }
 }
 
