@@ -12,6 +12,7 @@ import io.confluent.kafka.schemaregistry.client.{SchemaMetadata, SchemaRegistryC
 import jersey.repackaged.com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 import org.apache.avro.Schema
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -28,6 +29,8 @@ import scala.util.control.NonFatal
 class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
     extends SchemaRegistryClient
     with AutoCloseable {
+  
+  private val logger = LoggerFactory.getLogger(getClass)
 
   // This cache the schema id by subject and schema
   private val subjectSchemaCache: LoadingCache[SchemaCacheKey, java.lang.Integer] = CacheBuilder
@@ -152,19 +155,28 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
   override def close(): Unit =
     client.close()
 
-  private def processResponse[T](r: Response)(f: Response => T) =
-    if (r.getStatus == 200) {
-      f(r)
-    } else {
-      throw parseRestException(r)
+  private def processResponse[T](r: Response)(f: Response => T) = {
+    try {
+      if (r.getStatus == 200) {
+        f(r)
+      } else {
+        throw parseRestException(r)
+      }
+    } finally {
+      r.close()
     }
+  }
 
   private def parseRestException(response: Response) = {
+    response.bufferEntity() // so we can read it more than once
     try {
       val jsonObject = response.readEntity(classOf[JsonObject])
       new RestClientException(jsonObject.getString("message"), response.getStatus, jsonObject.getInt("error_code"))
     } catch {
-      case NonFatal(_) => new RestClientException("Server returned a non-JSON response", response.getStatus, -1)
+      case NonFatal(_) => 
+        val truncatedResponseBody = response.readEntity(classOf[String]).take(10000).mkString
+        logger.warn("Schema registry returned a non-JSON.response. Status: ${response.getStatus}. Response (truncated): $truncatedResponseBody")
+        new RestClientException("Server returned a non-JSON response. See the logs for details.", response.getStatus, -1)
     }
   }
 }
