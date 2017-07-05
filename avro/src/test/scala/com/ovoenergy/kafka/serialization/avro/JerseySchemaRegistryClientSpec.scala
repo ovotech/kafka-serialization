@@ -97,6 +97,11 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
         a[RestClientException] should be thrownBy client.register("test-subject", schema)
       }
 
+      "throw an exception in case of a non-JSON response" in withJerseySchemaRegistryClient { client =>
+        givenHtmlResponse(401, "You're unauthorized, sucker!")
+        a[RestClientException] should be thrownBy client.register("test-subject", schema)
+      }
+
       "cache the registered schema" in withJerseySchemaRegistryClient { client =>
         val schemaId = 321
         givenNextSchemaId("test-subject", schemaId)
