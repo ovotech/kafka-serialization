@@ -105,6 +105,24 @@ class SerializationSpec extends UnitSpec {
           }
         }
 
+        "the format does not match" should {
+          "not drop unknown format byte" in {
+
+            val expectedString = "TestString"
+            val topic = "test-topic"
+
+            val d: Deserializer[String] = formatDemultiplexerDeserializer(_ => StringDeserializer) {
+              case Format.Json => throw new RuntimeException("must not match")
+            }
+
+            val deserialized = d.deserialize(
+              topic,
+              StringSerializer.serialize(topic, expectedString)
+            )
+            deserialized shouldBe expectedString
+          }
+        }
+
         "dropping format is default" should {
           "drop the magic byte correctly" in {
 
