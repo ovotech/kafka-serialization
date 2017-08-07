@@ -78,12 +78,9 @@ private[core] trait Deserialization {
     pf: PartialFunction[Format, KafkaDeserializer[T]]
   ): KafkaDeserializer[T] =
     deserializer({ (topic, data) =>
-      val d = pf.applyOrElse[Format, KafkaDeserializer[T]](Format.fromByte(data(0)), unknownFormat)
-      (if (dropFormat) {
-         formatDroppingDeserializer(d)
-       } else {
-         d
-       }).deserialize(topic, data)
+      pf.andThen(d => if (dropFormat) formatDroppingDeserializer(d) else d)
+        .applyOrElse(Format.fromByte(data(0)), unknownFormat)
+        .deserialize(topic, data)
     })
 
   /**
