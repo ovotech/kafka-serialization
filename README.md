@@ -33,15 +33,18 @@ The library is available in the Bintray OVO repository. Add this snippet to your
 import sbt._
 import sbt.Keys.
 
-resolvers += Resolver.bintray("ovotech", "maven)
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
-libraryDependencies ++= Seq(
-  "com.ovoenergy" %% "kafka-serialization-core",
-  "com.ovoenergy" %% "kafka-serialization-circe", // To provide Circe JSON support
-  "com.ovoenergy" %% "kafka-serialization-json4s", // To provide Json4s JSON support
-  "com.ovoenergy" %% "kafka-serialization-spray", // To provide Spray-json JSON support
-  "com.ovoenergy" %% "kafka-serialization-avro4s" // To provide Avro4s Avro support
-)
+libraryDependencies ++= {
+  val kafkaSerializationV = "0.1.19"
+  Seq(
+    "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
+    "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support
+    "com.ovoenergy" %% "kafka-serialization-json4s" % kafkaSerializationV, // To provide Json4s JSON support
+    "com.ovoenergy" %% "kafka-serialization-spray" % kafkaSerializationV, // To provide Spray-json JSON support
+    "com.ovoenergy" %% "kafka-serialization-avro4s" % kafkaSerializationV // To provide Avro4s Avro support
+  )
+}
 
 ```
 
