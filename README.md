@@ -33,7 +33,7 @@ The library is available in the Bintray OVO repository. Add this snippet to your
 import sbt._
 import sbt.Keys.
 
-resolvers += Resolver.bintray("ovotech", "maven)
+resolvers += Resolver.bintray("ovotech", "maven")
 
 libraryDependencies ++= Seq(
   "com.ovoenergy" %% "kafka-serialization-core",
