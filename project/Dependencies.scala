@@ -73,9 +73,9 @@ object Dependencies {
 
   object kafka {
 
-    private val version = "0.10.2.1"
+    private val version = "0.11.0.1"
 
-    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "3.1.1" exclude ("org.slf4j", "slf4j-log4j12")
+    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "3.3.0" exclude ("org.slf4j", "slf4j-log4j12")
     val client = "org.apache.kafka" % "kafka-clients" % version exclude ("org.slf4j", "slf4j-log4j12")
   }
 
