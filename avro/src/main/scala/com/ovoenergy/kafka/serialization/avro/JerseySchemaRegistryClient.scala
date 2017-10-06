@@ -111,6 +111,9 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
         .asJavaCollection
     }
 
+  override def getBySubjectAndId(subject: String, id: Int): Schema =
+    getBySubjectAndID(subject, id)
+
   override def getBySubjectAndID(subject: String, id: Int): Schema =
     getByID(id)
 
@@ -123,6 +126,9 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
       case Failure(e) => throw e
       case Success(int) => int
     }
+
+  override def getById(id: Int): Schema =
+    getByID(id)
 
   override def getByID(id: Int): Schema =
     Try {
