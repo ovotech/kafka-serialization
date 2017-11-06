@@ -181,7 +181,7 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
       case NonFatal(_) =>
         val truncatedResponseBody = response.readEntity(classOf[String]).take(10000).mkString
         logger.warn(
-          "Schema registry returned a non-JSON.response. Status: ${response.getStatus}. Response (truncated): $truncatedResponseBody"
+          s"Schema registry returned a non-JSON.response. Status: ${response.getStatus}. Response (truncated): $truncatedResponseBody"
         )
         new RestClientException(
           "Server returned a non-JSON response. See the logs for details.",
