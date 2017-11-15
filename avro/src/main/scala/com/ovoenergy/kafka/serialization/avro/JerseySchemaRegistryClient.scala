@@ -27,7 +27,7 @@ import scala.util.control.NonFatal
   * It implements only a subset of the [[SchemaRegistryClient]] interface.
   */
 class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
-  extends SchemaRegistryClient
+    extends SchemaRegistryClient
     with AutoCloseable {
 
   private val logger = LoggerFactory.getLogger(getClass)
