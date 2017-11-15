@@ -108,4 +108,17 @@ trait SchemaRegistryFixture extends BeforeAndAfterEach { _: Suite with WireMockF
         )
     )
 
+
+  def givenJsonResponse(status:Int, body:String, url:String): Unit = {
+    stubFor(
+      any(urlEqualTo(url))
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+            .withBody(body)
+            .withHeader("Content-Type", "application/json")
+        )
+    )
+  }
+
 }
