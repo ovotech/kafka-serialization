@@ -27,7 +27,7 @@ import scala.util.control.NonFatal
   * It implements only a subset of the [[SchemaRegistryClient]] interface.
   */
 class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
-    extends SchemaRegistryClient
+  extends SchemaRegistryClient
     with AutoCloseable {
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -153,7 +153,20 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
     throw new UnsupportedOperationException
 
   override def getLatestSchemaMetadata(subject: String): SchemaMetadata =
-    throw new UnsupportedOperationException
+    processResponse(
+      subjects
+        .path(subject)
+        .path("versions")
+        .path("latest")
+        .request()
+        .get()
+    ) { response =>
+      val jsonObject = response.readEntity(classOf[JsonObject])
+      val id = jsonObject.getInt("id")
+      val version = jsonObject.getInt("version")
+      val schema = jsonObject.getString("schema")
+      new SchemaMetadata(id, version, schema)
+    }
 
   override def testCompatibility(subject: String, schema: Schema): Boolean =
     throw new UnsupportedOperationException

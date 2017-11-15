@@ -110,14 +110,29 @@ class JerseySchemaRegistryClientSpec extends UnitSpec with WireMockFixture with 
         verify(1, postRequestedFor(anyUrl()))
       }
     }
+
+    "getting the latest schema metadata" when {
+      "it should return the latest schema" in withJerseySchemaRegistryClient { client =>
+        val subject = "foo-value"
+        val version = 2
+        val id = 1
+        val body = s"""{"subject":"$subject","version":$version,"id":$id,"schema":"\\"string\\""}"""
+        givenJsonResponse(200, body, s"/subjects/$subject/versions/latest")
+
+        val result = client.getLatestSchemaMetadata(subject)
+        result.getSchema shouldBe ("\"string\"")
+        result.getId shouldBe (id)
+        result.getVersion shouldBe version
+      }
+    }
   }
 
   def withJerseySchemaRegistryClient[T](f: JerseySchemaRegistryClient => T): T =
     withJerseySchemaRegistryClient()(f)
 
   def withJerseySchemaRegistryClient[T](settings: SchemaRegistryClientSettings = SchemaRegistryClientSettings(
-                                          wireMockEndpoint
-                                        ))(f: JerseySchemaRegistryClient => T): T =
+    wireMockEndpoint
+  ))(f: JerseySchemaRegistryClient => T): T =
     resource.managed(JerseySchemaRegistryClient(settings)).acquireAndGet(f)
 
 }
