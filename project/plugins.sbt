@@ -7,7 +7,7 @@ addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
 // https://github.com/sbt/sbt-bintray/issues/104
 // addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.4.0")
 
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.1")
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.5.6")
 addSbtPlugin("com.lucidchart" % "sbt-scalafmt-coursier" % "1.7")
 
 // To resolve custom bintray-sbt plugin

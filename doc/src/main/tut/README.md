@@ -81,7 +81,11 @@ val consumer = new KafkaConsumer(
   nullDeserializer[Unit],
   circeJsonDeserializer[UserCreated]
 )
+```
 
+```tut:invisible
+producer.close()
+consumer.close()
 ```
 
 ## Avro example
@@ -123,7 +127,7 @@ implicit val UserCreatedToRecord = ToRecord[UserCreated]
 val producer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
   nullSerializer[Unit], 
-  avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+  avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includeFormatByte = true)
 )
 
 // This type class is need by the avroBinarySchemaIdDeserializer
@@ -132,8 +136,13 @@ implicit val UserCreatedFromRecord = FromRecord[UserCreated]
 val consumer = new KafkaConsumer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
   nullDeserializer[Unit],
-  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false)
+  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
 )
+```
+
+```tut:invisible
+producer.close()
+consumer.close()
 ```
 
 This Avro serializer will try to register the schema every new message type it will serialize and will save the obtained 
@@ -182,6 +191,10 @@ val consumer = new KafkaConsumer(
 )
 ```
 
+```tut:invisible
+consumer.close()
+```
+
 ## Format byte
 The Original Confluent Avro serializer/deserializer prefix the payload with a "magic" byte to identify that the message 
 has been written with the Avro serializer. 
@@ -214,7 +227,7 @@ case class UserCreated(id: String, name: String, email: String) extends Event
 val avroBinaryProducer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
   nullSerializer[Unit],   
-  formatSerializer(Format.AvroBinarySchemaId, avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false))
+  formatSerializer(Format.AvroBinarySchemaId, avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includeFormatByte = false))
 )
 
 /* This producer will produce messages in Json format */
@@ -235,11 +248,18 @@ val consumer = new KafkaConsumer(
 )
 
 /* This consumer will be able to consume messages in Avro binary format with the magic format byte at the start */
-val consumer = new KafkaConsumer(
+val avroBinaryConsumer = new KafkaConsumer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
   nullDeserializer[Unit],
   avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
 )
+```
+
+```tut:invisible
+avroBinaryProducer.close()
+circeProducer.close()
+consumer.close()
+avroBinaryConsumer.close()
 ```
 
 You can notice that the `formatDemultiplexerDeserializer` is little bit nasty because it is invariant in the type `T` so
