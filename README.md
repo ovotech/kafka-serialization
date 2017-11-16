@@ -36,7 +36,7 @@ import sbt.Keys.
 resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= {
-  val kafkaSerializationV = "0.1.19"
+  val kafkaSerializationV = "0.1.23" // see the Maven badge above for the latest version
   Seq(
     "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
     "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support
@@ -132,7 +132,7 @@ implicit val UserCreatedFromRecord = FromRecord[UserCreated]
 val consumer = new KafkaConsumer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
   nullDeserializer[Unit],
-  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false)
 )
 ```
 
@@ -178,7 +178,7 @@ implicit val UserCreatedSchemaFor = SchemaFor[UserCreated]
 val consumer = new KafkaConsumer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
   nullDeserializer[Unit],
-  avroBinarySchemaIdWithReaderSchemaDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+  avroBinarySchemaIdWithReaderSchemaDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false)
 )
 ```
 
@@ -230,10 +230,16 @@ val consumer = new KafkaConsumer(
   nullDeserializer[Unit],
   formatDemultiplexerDeserializer[UserCreated](unknownFormat => failingDeserializer(new RuntimeException("Unsupported format"))){
     case Format.Json => circeJsonDeserializer[UserCreated]
-    case Format.AvroBinarySchemaId => avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+    case Format.AvroBinarySchemaId => avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false)
   }
 )
 
+/* This consumer will be able to consume messages in Avro binary format with the magic format byte at the start */
+val consumer = new KafkaConsumer(
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullDeserializer[Unit],
+  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
+)
 ```
 
 You can notice that the `formatDemultiplexerDeserializer` is little bit nasty because it is invariant in the type `T` so
