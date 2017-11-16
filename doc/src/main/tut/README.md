@@ -33,15 +33,18 @@ The library is available in the Bintray OVO repository. Add this snippet to your
 import sbt._
 import sbt.Keys.
 
-resolvers += Resolver.bintray("ovotech", "maven)
+resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
-libraryDependencies ++= Seq(
-  "com.ovoenergy" %% "kafka-serialization-core",
-  "com.ovoenergy" %% "kafka-serialization-circe", // To provide Circe JSON support
-  "com.ovoenergy" %% "kafka-serialization-json4s", // To provide Json4s JSON support
-  "com.ovoenergy" %% "kafka-serialization-spray", // To provide Spray-json JSON support
-  "com.ovoenergy" %% "kafka-serialization-avro4s" // To provide Avro4s Avro support
-)
+libraryDependencies ++= {
+  val kafkaSerializationV = "0.1.23" // see the Maven badge above for the latest version
+  Seq(
+    "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
+    "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support
+    "com.ovoenergy" %% "kafka-serialization-json4s" % kafkaSerializationV, // To provide Json4s JSON support
+    "com.ovoenergy" %% "kafka-serialization-spray" % kafkaSerializationV, // To provide Spray-json JSON support
+    "com.ovoenergy" %% "kafka-serialization-avro4s" % kafkaSerializationV // To provide Avro4s Avro support
+  )
+}
 
 ```
 
@@ -78,7 +81,11 @@ val consumer = new KafkaConsumer(
   nullDeserializer[Unit],
   circeJsonDeserializer[UserCreated]
 )
+```
 
+```tut:invisible
+producer.close()
+consumer.close()
 ```
 
 ## Avro example
@@ -120,7 +127,7 @@ implicit val UserCreatedToRecord = ToRecord[UserCreated]
 val producer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
   nullSerializer[Unit], 
-  avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+  avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includeFormatByte = true)
 )
 
 // This type class is need by the avroBinarySchemaIdDeserializer
@@ -129,8 +136,13 @@ implicit val UserCreatedFromRecord = FromRecord[UserCreated]
 val consumer = new KafkaConsumer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
   nullDeserializer[Unit],
-  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
 )
+```
+
+```tut:invisible
+producer.close()
+consumer.close()
 ```
 
 This Avro serializer will try to register the schema every new message type it will serialize and will save the obtained 
@@ -175,8 +187,12 @@ implicit val UserCreatedSchemaFor = SchemaFor[UserCreated]
 val consumer = new KafkaConsumer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
   nullDeserializer[Unit],
-  avroBinarySchemaIdWithReaderSchemaDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+  avroBinarySchemaIdWithReaderSchemaDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false)
 )
+```
+
+```tut:invisible
+consumer.close()
 ```
 
 ## Format byte
@@ -211,7 +227,7 @@ case class UserCreated(id: String, name: String, email: String) extends Event
 val avroBinaryProducer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
   nullSerializer[Unit],   
-  formatSerializer(Format.AvroBinarySchemaId, avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false))
+  formatSerializer(Format.AvroBinarySchemaId, avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includeFormatByte = false))
 )
 
 /* This producer will produce messages in Json format */
@@ -227,10 +243,23 @@ val consumer = new KafkaConsumer(
   nullDeserializer[Unit],
   formatDemultiplexerDeserializer[UserCreated](unknownFormat => failingDeserializer(new RuntimeException("Unsupported format"))){
     case Format.Json => circeJsonDeserializer[UserCreated]
-    case Format.AvroBinarySchemaId => avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false)
+    case Format.AvroBinarySchemaId => avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false)
   }
 )
 
+/* This consumer will be able to consume messages in Avro binary format with the magic format byte at the start */
+val avroBinaryConsumer = new KafkaConsumer(
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullDeserializer[Unit],
+  avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
+)
+```
+
+```tut:invisible
+avroBinaryProducer.close()
+circeProducer.close()
+consumer.close()
+avroBinaryConsumer.close()
 ```
 
 You can notice that the `formatDemultiplexerDeserializer` is little bit nasty because it is invariant in the type `T` so
