@@ -127,7 +127,7 @@ implicit val UserCreatedToRecord = ToRecord[UserCreated]
 val producer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
   nullSerializer[Unit], 
-  avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includeFormatByte = true)
+  avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
 )
 
 // This type class is need by the avroBinarySchemaIdDeserializer
@@ -227,7 +227,7 @@ case class UserCreated(id: String, name: String, email: String) extends Event
 val avroBinaryProducer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
   nullSerializer[Unit],   
-  formatSerializer(Format.AvroBinarySchemaId, avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includeFormatByte = false))
+  formatSerializer(Format.AvroBinarySchemaId, avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false))
 )
 
 /* This producer will produce messages in Json format */
