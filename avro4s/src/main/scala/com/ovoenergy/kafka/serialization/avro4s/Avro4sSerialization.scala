@@ -162,50 +162,50 @@ private[avro4s] trait Avro4sSerialization {
   }
 
   /**
-    * Build a deserializer for binary-encoded messages prepended with a four byte Schema Registry schema ID.
+    * Build a serializer for binary-encoded messages prepended with a four byte Schema Registry schema ID.
     *
     * Assumes that the schema registry does not require authentication.
     *
-    * @param isKey true if this is a deserializer for keys, false if it is for values
-    * @param includeFormatByte whether the messages should be prepended with a magic byte to specify the Avro format
+    * @param isKey true if this is a serializer for keys, false if it is for values
+    * @param includesFormatByte whether the messages should be prepended with a magic byte to specify the Avro format
     */
   def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryEndpoint: String,
                                                 isKey: Boolean,
-                                                includeFormatByte: Boolean): KafkaSerializer[T] =
-    avroBinarySchemaIdSerializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey, includeFormatByte)
+                                                includesFormatByte: Boolean): KafkaSerializer[T] =
+    avroBinarySchemaIdSerializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey, includesFormatByte)
 
   /**
-    * Build a deserializer for binary-encoded messages prepended with a four byte Schema Registry schema ID.
+    * Build a serializer for binary-encoded messages prepended with a four byte Schema Registry schema ID.
     *
     * Assumes that the schema registry does not require authentication.
     *
-    * @param isKey true if this is a deserializer for keys, false if it is for values
-    * @param includeFormatByte whether the messages should be prepended with a magic byte to specify the Avro format
+    * @param isKey true if this is a serializer for keys, false if it is for values
+    * @param includesFormatByte whether the messages should be prepended with a magic byte to specify the Avro format
     */
   def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings,
                                                 isKey: Boolean,
-                                                includeFormatByte: Boolean): KafkaSerializer[T] = {
+                                                includesFormatByte: Boolean): KafkaSerializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close(), includeFormatByte)
+    avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close(), includesFormatByte)
   }
 
   /**
-    * Build a deserializer for binary-encoded messages prepended with a four byte Schema Registry schema ID.
+    * Build a serializer for binary-encoded messages prepended with a four byte Schema Registry schema ID.
     *
     * Assumes that the schema registry does not require authentication.
     *
-    * @param isKey true if this is a deserializer for keys, false if it is for values
-    * @param includeFormatByte whether the messages should be prepended with a magic byte to specify the Avro format
+    * @param isKey true if this is a serializer for keys, false if it is for values
+    * @param includesFormatByte whether the messages should be prepended with a magic byte to specify the Avro format
     */
   def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
                                                 isKey: Boolean,
-                                                includeFormatByte: Boolean): KafkaSerializer[T] =
-    avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => Unit, includeFormatByte)
+                                                includesFormatByte: Boolean): KafkaSerializer[T] =
+    avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => Unit, includesFormatByte)
 
   private def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
                                                         isKey: Boolean,
                                                         close: () => Unit,
-                                                        includeFormatByte: Boolean): KafkaSerializer[T] = {
+                                                        includesFormatByte: Boolean): KafkaSerializer[T] = {
 
     val toRecord = implicitly[ToRecord[T]]
     val kafkaAvroSerializer = new KafkaAvroSerializer(schemaRegistryClient)
@@ -221,7 +221,7 @@ private[avro4s] trait Avro4sSerialization {
 
     serializer({ (topic, t) =>
       val bytes = kafkaAvroSerializer.serialize(topic, toRecord(t))
-      if (includeFormatByte)
+      if (includesFormatByte)
         bytes
       else
         dropMagicByte(bytes)
