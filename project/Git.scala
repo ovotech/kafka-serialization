@@ -6,7 +6,7 @@ object Git {
   lazy val settings = Seq(
     git.remoteRepo := "origin",
     git.runner := ConsoleGitRunner,
-    git.baseVersion := "0.2.0",
+    git.baseVersion := "0.3.0",
     git.useGitDescribe := true
   )
 
