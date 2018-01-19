@@ -79,6 +79,13 @@ object Dependencies {
     val client = "org.apache.kafka" % "kafka-clients" % version exclude ("org.slf4j", "slf4j-log4j12")
   }
 
+  object JsoniterScala {
+
+    private val version = "0.5.0"
+
+    val macros = "com.github.plokhotnyuk.jsoniter-scala" %% "macros" % version
+  }
+
   object Circe {
 
     private val version = "0.8.0"
@@ -147,6 +154,8 @@ object Dependencies {
   )
 
   val avro4s = l ++= Seq(Avro4s.core, kafka.avroSerializer)
+
+  val jsoniterScala = l ++= Seq(JsoniterScala.macros)
 
   val circe = l ++= Seq(Circe.core, Circe.parser, Circe.generic % Test)
 
