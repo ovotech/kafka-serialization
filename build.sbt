@@ -2,7 +2,7 @@ import com.typesafe.sbt.{GitBranchPrompt, GitVersioning}
 
 lazy val `kafka-serialization` = project
   .in(file("."))
-  .aggregate(avro, avro4s, circe, core, json4s, spray, testkit, doc)
+  .aggregate(avro, avro4s, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
   .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(Shared.settings: _*)
   .settings(name := "kafka-serialization")
@@ -58,6 +58,16 @@ lazy val avro4s = project
   .settings(Shared.settings: _*)
   .settings(name := "kafka-serialization-avro4s")
   .settings(Dependencies.avro4s)
+  .settings(Bintray.settings: _*)
+  .settings(Git.settings: _*)
+
+lazy val `jsoniter-scala` = project
+  .in(file("jsoniter-scala"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .settings(Shared.settings: _*)
+  .settings(name := "kafka-serialization-jsoniter-scala")
+  .settings(Dependencies.jsoniterScala)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
 
