@@ -18,6 +18,7 @@ The library is composed by these modules:
 
  - kafka-serialization-core: provides the serialization primitives to build serializers and deserializers.
  - kafka-serialization-json4s: provides serializer and deserializer based on Json4s
+ - kafka-serialization-jsoniter-scala: provides serializer and deserializer based on Jsoniter Scala
  - kafka-serialization-spray: provides serializer and deserializer based on Spray Json
  - kafka-serialization-circe: provides serializer and deserializer based on Circe
  - kafka-serialization-avro: provides an improved schema-registry client based on Jersey 2.x that allow basic auth
@@ -41,6 +42,7 @@ libraryDependencies ++= {
     "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
     "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support
     "com.ovoenergy" %% "kafka-serialization-json4s" % kafkaSerializationV, // To provide Json4s JSON support
+    "com.ovoenergy" %% "kafka-serialization-jsoniter-scala" % kafkaSerializationV, // To provide Jsoniter Scala JSON support
     "com.ovoenergy" %% "kafka-serialization-spray" % kafkaSerializationV, // To provide Spray-json JSON support
     "com.ovoenergy" %% "kafka-serialization-avro4s" % kafkaSerializationV // To provide Avro4s Avro support
   )
@@ -83,7 +85,42 @@ val consumer = new KafkaConsumer(
 )
 ```
 
+## Jsoniter Scala example
+[Jsoniter Scala](https://github.com/plokhotnyuk/jsoniter-scala). is a library that generates codecs for case classes, 
+standard types and collections to get maximum performance of JSON parsing & serialization.
 
+Here is an example of serialization/deserialization with Jsoniter Scala:
+
+```scala
+import com.ovoenergy.kafka.serialization.core._
+import com.ovoenergy.kafka.serialization.jsoniter_scala._
+
+// Import the Jsoniter Scala macros & core support
+import com.github.plokhotnyuk.jsoniter_scala.macros._
+import com.github.plokhotnyuk.jsoniter_scala.core._
+
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.CommonClientConfigs._
+
+import scala.collection.JavaConverters._
+
+case class UserCreated(id: String, name: String, age: Int)
+
+implicit val userCreatedCodec: JsonCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig())
+
+val producer = new KafkaProducer(
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
+  nullSerializer[Unit], 
+  jsoniterScalaSerializer[UserCreated]()
+)
+
+val consumer = new KafkaConsumer(
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullDeserializer[Unit],
+  jsoniterScalaDeserializer[UserCreated]()
+)
+```
 
 
 ## Avro example
