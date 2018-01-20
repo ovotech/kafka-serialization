@@ -10,7 +10,7 @@ lazy val `kafka-serialization` = project
 
 lazy val doc = project
   .in(file("doc"))
-  .dependsOn(avro % "tut", avro4s % "tut", circe % "tut", core % "tut", json4s % "tut", spray % "tut")
+  .dependsOn(avro % "tut", avro4s % "tut", circe % "tut", core % "tut", json4s % "tut", `jsoniter-scala` % "tut", spray % "tut")
   .enablePlugins(TutPlugin)
   .settings(Shared.settings: _*)
   .settings(
