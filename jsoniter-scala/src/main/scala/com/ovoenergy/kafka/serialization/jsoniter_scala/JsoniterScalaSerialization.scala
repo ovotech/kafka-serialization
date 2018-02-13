@@ -6,12 +6,12 @@ import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer,
 
 private[jsoniter_scala] trait JsoniterScalaSerialization {
 
-  def jsoniterScalaSerializer[T](
-    config: WriterConfig = WriterConfig()
-  )(implicit codec: JsonCodec[T]): KafkaSerializer[T] = serializer((_, data) => write[T](data, config))
+  def jsoniterScalaSerializer[T](config: WriterConfig = WriterConfig())(
+    implicit codec: JsonCodec[T]
+  ): KafkaSerializer[T] = serializer((_, data) => write[T](data, config))
 
-  def jsoniterScalaDeserializer[T](
-    config: ReaderConfig = ReaderConfig()
-  )(implicit codec: JsonCodec[T]): KafkaDeserializer[T] = deserializer((_, data) => read(data, config))
+  def jsoniterScalaDeserializer[T](config: ReaderConfig = ReaderConfig())(
+    implicit codec: JsonCodec[T]
+  ): KafkaDeserializer[T] = deserializer((_, data) => read(data, config))
 
 }
