@@ -16,20 +16,20 @@ class JsoniterScalaSerializationSpec extends UnitSpec with JsoniterScalaSerializ
 
         val jsonBytes = serializer.serialize("does not matter", event)
 
-        jsonBytes.deep shouldBe JsonWriter.write(eventCodec, event).deep
+        jsonBytes.deep shouldBe write(event).deep
       }
       "write prettified json" in forAll { event: Event =>
         val serializer = jsoniterScalaSerializer[Event](WriterConfig(indentionStep = 2))
 
         val jsonBytes = serializer.serialize("does not matter", event)
 
-        jsonBytes.deep shouldBe JsonWriter.write(eventCodec, event, WriterConfig(indentionStep = 2)).deep
+        jsonBytes.deep shouldBe write(event, WriterConfig(indentionStep = 2)).deep
       }
     }
 
     "deserializing" should {
       "parse the json" in forAll { event: Event =>
-        val jsonBytes = JsonWriter.write(eventCodec, event)
+        val jsonBytes = write(event)
         val deserializer = jsoniterScalaDeserializer[Event]()
 
         val deserialized = deserializer.deserialize("does not matter", jsonBytes)
