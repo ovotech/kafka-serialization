@@ -3,6 +3,13 @@ import sbt._
 
 object Dependencies {
 
+  object Cats {
+
+    private val version = "1.0.1"
+
+    val core = "org.typelevel" %% "cats-core" % version
+  }
+
   object Akka {
 
     private val version = "2.4.17"
@@ -142,6 +149,11 @@ object Dependencies {
 
   val core = l ++= Seq(
     kafka.client
+  )
+
+  val cats = l ++= Seq(
+    kafka.client,
+    Cats.core
   )
 
   val json4s = l ++= Seq(Json4s.core, Json4s.native)
