@@ -17,6 +17,7 @@ It is quite easy to add support for other libraries as well.
 The library is composed by these modules:
 
  - kafka-serialization-core: provides the serialization primitives to build serializers and deserializers.
+ - kafka-serialization-cats: provides cats typeclasses instances for serializers and deserializers.
  - kafka-serialization-json4s: provides serializer and deserializer based on Json4s
  - kafka-serialization-jsoniter-scala: provides serializer and deserializer based on Jsoniter Scala
  - kafka-serialization-spray: provides serializer and deserializer based on Spray Json
@@ -85,6 +86,9 @@ val consumer = new KafkaConsumer(
 )
 ```
 
+
+
+
 ## Jsoniter Scala example
 [Jsoniter Scala](https://github.com/plokhotnyuk/jsoniter-scala). is a library that generates codecs for case classes, 
 standard types and collections to get maximum performance of JSON parsing & serialization.
@@ -121,6 +125,8 @@ val consumer = new KafkaConsumer(
   jsoniterScalaDeserializer[UserCreated]()
 )
 ```
+
+
 
 
 ## Avro example
@@ -294,6 +300,25 @@ You can notice that the `formatDemultiplexerDeserializer` is little bit nasty be
 all the demultiplexed `serialiazer` must be declared as `Deserializer[T]`.
 
 There are other support serializer and deserializer, you can discover them looking trough the code and the tests.
+
+## Cats instances
+The `cats` module provides the `Functor` typeclass instance for the `Deserializer` and `Contravariant` instance for the 
+`Serializer`. This allow to do:
+
+```scala
+import cats.syntax.functor._
+import cats.syntax.contravariant._
+import com.ovoenergy.kafka.serialization.core._
+import com.ovoenergy.kafka.serialization.cats._
+import org.apache.kafka.common.serialization.{Serializer, Deserializer, IntegerSerializer}
+
+val intDeserializer: Deserializer[Int] = constDeserializer(5)
+val stringDeserializer: Deserializer[String] = intDeserializer.map(_.toString)
+ 
+ 
+val intSerializer: Serializer[Int] = new IntegerSerializer
+val stringSerializer: Serializer[String] = intSerializer.contramap(_.toInt)
+```
 
 ## Complaints and other Feedback
 Feedback of any kind is always appreciated.
