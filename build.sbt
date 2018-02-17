@@ -1,7 +1,7 @@
 
 lazy val `kafka-serialization` = project
   .in(file("."))
-  .aggregate(avro, avro4s, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
+  .aggregate(avro, avro4s, cats, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
   .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(Shared.settings: _*)
   .settings(name := "kafka-serialization")
@@ -9,7 +9,7 @@ lazy val `kafka-serialization` = project
 
 lazy val doc = project
   .in(file("doc"))
-  .dependsOn(avro % "tut", avro4s % "tut", circe % "tut", core % "tut", json4s % "tut", `jsoniter-scala` % "tut", spray % "tut")
+  .dependsOn(avro % "tut", avro4s % "tut", cats % "tut", circe % "tut", core % "tut", json4s % "tut", `jsoniter-scala` % "tut", spray % "tut")
   .enablePlugins(TutPlugin)
   .settings(Shared.settings: _*)
   .settings(
@@ -97,5 +97,15 @@ lazy val core = project
   .settings(Shared.settings: _*)
   .settings(name := "kafka-serialization-core")
   .settings(Dependencies.core)
+  .settings(Bintray.settings: _*)
+  .settings(Git.settings: _*)
+
+lazy val cats = project
+  .in(file("cats"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .settings(Shared.settings: _*)
+  .settings(name := "kafka-serialization-cats")
+  .settings(Dependencies.cats)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
