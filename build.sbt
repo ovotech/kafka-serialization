@@ -1,4 +1,3 @@
-import com.typesafe.sbt.{GitBranchPrompt, GitVersioning}
 
 lazy val `kafka-serialization` = project
   .in(file("."))

@@ -1,6 +1,5 @@
 import sbt.Keys._
 import sbt._
-import sbt.impl.GroupArtifactID
 
 object Dependencies {
 
@@ -141,7 +140,9 @@ object Dependencies {
 
   val l = libraryDependencies
 
-  val core = l ++= Seq(kafka.client)
+  val core = l ++= Seq(
+    kafka.client
+  )
 
   val json4s = l ++= Seq(Json4s.core, Json4s.native)
 

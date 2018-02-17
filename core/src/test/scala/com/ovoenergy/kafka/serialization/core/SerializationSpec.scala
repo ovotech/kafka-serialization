@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 OVO Energy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ovoenergy.kafka.serialization.core
 
 import java.nio.ByteBuffer
@@ -51,7 +67,7 @@ class SerializationSpec extends UnitSpec {
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
             val serializer = topicMultiplexerSerializer[Any](_ => constSerializer("foo".getBytes(UTF_8))) {
               case StringTopic => StringSerializer.asInstanceOf[Serializer[Any]]
-              case IntTopic => IntSerializer.asInstanceOf[Serializer[Any]]
+              case IntTopic    => IntSerializer.asInstanceOf[Serializer[Any]]
             }
 
             val serialized = serializer.serialize(IntTopic, 56)
@@ -69,7 +85,7 @@ class SerializationSpec extends UnitSpec {
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
             val serializer = topicMultiplexerSerializer[Any](_ => constSerializer(expectedValue)) {
               case StringTopic => StringSerializer.asInstanceOf[Serializer[Any]]
-              case IntTopic => IntSerializer.asInstanceOf[Serializer[Any]]
+              case IntTopic    => IntSerializer.asInstanceOf[Serializer[Any]]
             }
 
             val serialized = serializer.serialize(IgnoredTopic, 56)
@@ -115,10 +131,7 @@ class SerializationSpec extends UnitSpec {
               case Format.Json => throw new RuntimeException("must not match")
             }
 
-            val deserialized = d.deserialize(
-              topic,
-              StringSerializer.serialize(topic, expectedString)
-            )
+            val deserialized = d.deserialize(topic, StringSerializer.serialize(topic, expectedString))
             deserialized shouldBe expectedString
           }
         }
@@ -254,7 +267,7 @@ class SerializationSpec extends UnitSpec {
             val deserializer =
               topicDemultiplexerDeserializer[Any](topic => failingDeserializer(new IllegalArgumentException(topic))) {
                 case StringTopic => StringDeserializer.asInstanceOf[Deserializer[Any]]
-                case IntTopic => IntDeserializer.asInstanceOf[Deserializer[Any]]
+                case IntTopic    => IntDeserializer.asInstanceOf[Deserializer[Any]]
               }
 
             val deserialized = deserializer.deserialize(IntTopic, IntSerializer.serialize(IgnoredTopic, expectedInt))
@@ -273,7 +286,7 @@ class SerializationSpec extends UnitSpec {
             // This code is nasty, but in production no one is going to have a consumer with two unrelated types.
             val deserializer = topicDemultiplexerDeserializer[Any](_ => constDeserializer(expectedValue)) {
               case StringTopic => StringDeserializer.asInstanceOf[Deserializer[Any]]
-              case IntTopic => IntDeserializer.asInstanceOf[Deserializer[Any]]
+              case IntTopic    => IntDeserializer.asInstanceOf[Deserializer[Any]]
             }
 
             val deserialized = deserializer.deserialize(nonMatchingTopic, IntSerializer.serialize(IgnoredTopic, 45))
