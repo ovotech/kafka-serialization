@@ -8,7 +8,7 @@ git fetch --tags
 
 echo 'Extracting version from sbt project...'
 sbt release-write-next-version
-version=`cat target/next_release_version`
+version=`cat target/releaseWriteNextVersion`
 
 echo 'Tagging the current commit'
 git tag -a v${version} -m "Release version "${version}
