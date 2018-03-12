@@ -301,6 +301,25 @@ all the demultiplexed `serialiazer` must be declared as `Deserializer[T]`.
 
 There are other support serializer and deserializer, you can discover them looking trough the code and the tests.
 
+## Useful de-serializers
+In the core module there are pleanty of serializers and deserializers that handle generic cases.
+
+### Optional deserializer
+To handle the case in which the data is null, you need to wrap the deserializer in the `optionalDeserializer`:
+
+```scala
+import com.ovoenergy.kafka.serialization.core._
+import com.ovoenergy.kafka.serialization.circe._
+
+// Import the Circe generic support
+import io.circe.generic.auto._
+import io.circe.syntax._
+
+case class UserCreated(id: String, name: String, age: Int)
+
+val userCreatedDeserializer: Deserializer[Option[UserCreated]] = optionalDeserializer(circeJsonDeserializer[UserCreated])
+```
+
 ## Cats instances
 The `cats` module provides the `Functor` typeclass instance for the `Deserializer` and `Contravariant` instance for the 
 `Serializer`. This allow to do:
