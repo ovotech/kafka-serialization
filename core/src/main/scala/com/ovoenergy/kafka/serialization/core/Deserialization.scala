@@ -122,6 +122,12 @@ private[core] trait Deserialization {
     })
 
   /**
+    * Wraps a Kafka deserializer to return None if the data is null.
+    */
+  def optionalDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[Option[T]] =
+    deserializer((topic, data) => Option(data).map(_ => d.deserialize(topic, data)))
+
+  /**
     * Builds a Kafka deserializer that will return the payload as-is.
     */
   def identityDeserializer: KafkaDeserializer[Array[Byte]] = identity[Array[Byte]] _
