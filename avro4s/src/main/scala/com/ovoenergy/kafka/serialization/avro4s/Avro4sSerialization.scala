@@ -57,7 +57,12 @@ private[avro4s] trait Avro4sSerialization {
                                                     isKey: Boolean,
                                                     includesFormatByte: Boolean): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdDeserializerWithProps(schemaRegistryClient, isKey, () => schemaRegistryClient.close(), includesFormatByte)
+    avroBinarySchemaIdDeserializerWithProps(
+      schemaRegistryClient,
+      isKey,
+      () => schemaRegistryClient.close(),
+      includesFormatByte
+    )
   }
 
   /**
@@ -73,11 +78,13 @@ private[avro4s] trait Avro4sSerialization {
                                                     props: Map[String, String] = Map()): KafkaDeserializer[T] =
     avroBinarySchemaIdDeserializerWithProps(schemaRegistryClient, isKey, () => Unit, includesFormatByte, props)
 
-  private def avroBinarySchemaIdDeserializerWithProps[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
-                                                            isKey: Boolean,
-                                                            close: () => Unit,
-                                                            includesFormatByte: Boolean,
-                                                            props: Map[String, String] = Map()): KafkaDeserializer[T] = {
+  private def avroBinarySchemaIdDeserializerWithProps[T: FromRecord](
+    schemaRegistryClient: SchemaRegistryClient,
+    isKey: Boolean,
+    close: () => Unit,
+    includesFormatByte: Boolean,
+    props: Map[String, String] = Map()
+  ): KafkaDeserializer[T] = {
 
     val fromRecord = implicitly[FromRecord[T]]
 
@@ -158,7 +165,13 @@ private[avro4s] trait Avro4sSerialization {
     includesFormatByte: Boolean,
     props: Map[String, String] = Map()
   ): KafkaDeserializer[T] =
-    avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(schemaRegistryClient, isKey, () => Unit, includesFormatByte, props)
+    avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(
+      schemaRegistryClient,
+      isKey,
+      () => Unit,
+      includesFormatByte,
+      props
+    )
 
   private def avroBinarySchemaIdWithReaderSchemaDeserializerWithProps[T: FromRecord: SchemaFor](
     schemaRegistryClient: SchemaRegistryClient,
@@ -219,7 +232,12 @@ private[avro4s] trait Avro4sSerialization {
                                                 isKey: Boolean,
                                                 includesFormatByte: Boolean): KafkaSerializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdSerializerWithProps(schemaRegistryClient, isKey, () => schemaRegistryClient.close(), includesFormatByte)
+    avroBinarySchemaIdSerializerWithProps(
+      schemaRegistryClient,
+      isKey,
+      () => schemaRegistryClient.close(),
+      includesFormatByte
+    )
   }
 
   /**
@@ -237,11 +255,13 @@ private[avro4s] trait Avro4sSerialization {
                                                 props: Map[String, String] = Map()): KafkaSerializer[T] =
     avroBinarySchemaIdSerializerWithProps(schemaRegistryClient, isKey, () => Unit, includesFormatByte, props)
 
-  private def avroBinarySchemaIdSerializerWithProps[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
-                                                        isKey: Boolean,
-                                                        close: () => Unit,
-                                                        includesFormatByte: Boolean,
-                                                        props: Map[String, String] = Map()): KafkaSerializer[T] = {
+  private def avroBinarySchemaIdSerializerWithProps[T: ToRecord](
+    schemaRegistryClient: SchemaRegistryClient,
+    isKey: Boolean,
+    close: () => Unit,
+    includesFormatByte: Boolean,
+    props: Map[String, String] = Map()
+  ): KafkaSerializer[T] = {
     val toRecord = implicitly[ToRecord[T]]
 
     val kafkaAvroSerializer = new KafkaAvroSerializer(schemaRegistryClient)
