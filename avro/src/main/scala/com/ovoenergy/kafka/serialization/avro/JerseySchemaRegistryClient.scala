@@ -219,6 +219,9 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
         )
     }
   }
+
+  override def getId(subject: String, schema: Schema): Int =
+    throw new UnsupportedOperationException
 }
 
 object JerseySchemaRegistryClient {
