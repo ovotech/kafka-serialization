@@ -87,7 +87,7 @@ object Dependencies {
 
   object JsoniterScala {
 
-    private val version = "0.9.4"
+    private val version = "0.22.2"
 
     val macros = "com.github.plokhotnyuk.jsoniter-scala" %% "macros" % version
   }
