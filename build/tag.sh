@@ -7,7 +7,7 @@ git tag -l | xargs git tag -d
 git fetch --tags
 
 echo 'Extracting version from sbt project...'
-sbt release-write-next-version
+sbt releaseWriteNextVersion
 version=`cat target/next_release_version`
 
 echo 'Tagging the current commit'

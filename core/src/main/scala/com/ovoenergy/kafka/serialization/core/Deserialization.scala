@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 OVO Energy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ovoenergy.kafka.serialization.core
 
 import java.util
@@ -104,6 +120,12 @@ private[core] trait Deserialization {
     deserializer({ (topic, data) => () =>
       d.deserialize(topic, data)
     })
+
+  /**
+    * Wraps a Kafka deserializer to return None if the data is null.
+    */
+  def optionalDeserializer[T](d: KafkaDeserializer[T]): KafkaDeserializer[Option[T]] =
+    deserializer((topic, data) => Option(data).map(_ => d.deserialize(topic, data)))
 
   /**
     * Builds a Kafka deserializer that will return the payload as-is.

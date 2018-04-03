@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
-package com.ovoenergy.kafka.serialization
+package com.ovoenergy.kafka.serialization.cats
 
-package object circe extends CirceSerialization
+import cats.Functor
+import org.apache.kafka.common.serialization.Deserializer
+import com.ovoenergy.kafka.serialization.core._
+
+trait DeserializerInstances {
+
+  implicit lazy val catsInstancesForKafkaDeserializer: Functor[Deserializer] = new Functor[Deserializer] {
+    override def map[A, B](fa: Deserializer[A])(f: A => B): Deserializer[B] = deserializer[B] {
+      (topic: String, data: Array[Byte]) =>
+        f(fa.deserialize(topic, data))
+    }
+  }
+
+}

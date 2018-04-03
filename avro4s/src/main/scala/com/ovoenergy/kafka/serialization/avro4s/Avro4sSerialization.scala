@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 OVO Energy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ovoenergy.kafka.serialization.avro4s
 
 import java.io.ByteArrayOutputStream
@@ -41,7 +57,12 @@ private[avro4s] trait Avro4sSerialization {
                                                     isKey: Boolean,
                                                     includesFormatByte: Boolean): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdDeserializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close(), includesFormatByte)
+    avroBinarySchemaIdDeserializerWithProps(
+      schemaRegistryClient,
+      isKey,
+      () => schemaRegistryClient.close(),
+      includesFormatByte
+    )
   }
 
   /**
@@ -49,22 +70,32 @@ private[avro4s] trait Avro4sSerialization {
     *
     * @param isKey true if this is a deserializer for keys, false if it is for values
     * @param includesFormatByte whether the messages are also prepended with a magic byte to specify the Avro format
+    * @param props configuration of the underlying [[KafkaAvroDeserializer]]
     */
   def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
                                                     isKey: Boolean,
-                                                    includesFormatByte: Boolean): KafkaDeserializer[T] =
-    avroBinarySchemaIdDeserializer(schemaRegistryClient, isKey, () => Unit, includesFormatByte)
+                                                    includesFormatByte: Boolean,
+                                                    props: Map[String, String] = Map()): KafkaDeserializer[T] =
+    avroBinarySchemaIdDeserializerWithProps(schemaRegistryClient, isKey, () => Unit, includesFormatByte, props)
 
-  private def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
-                                                            isKey: Boolean,
-                                                            close: () => Unit,
-                                                            includesFormatByte: Boolean): KafkaDeserializer[T] = {
+  private def avroBinarySchemaIdDeserializerWithProps[T: FromRecord](
+    schemaRegistryClient: SchemaRegistryClient,
+    isKey: Boolean,
+    close: () => Unit,
+    includesFormatByte: Boolean,
+    props: Map[String, String] = Map()
+  ): KafkaDeserializer[T] = {
 
     val fromRecord = implicitly[FromRecord[T]]
 
     val d: KafkaAvroDeserializer = new KafkaAvroDeserializer(schemaRegistryClient)
+
     // The configure method needs the `schema.registry.url` even if the schema registry client has been provided
-    d.configure(Map("schema.registry.url" -> "").asJava, isKey)
+    val properties = props.get("schema.registry.url") match {
+      case Some(_) => props.asJava
+      case None    => (props + ("schema.registry.url" -> "")).asJava
+    }
+    d.configure(properties, isKey)
 
     deserializer(
       { (topic, data) =>
@@ -112,7 +143,7 @@ private[avro4s] trait Avro4sSerialization {
     includesFormatByte: Boolean
   ): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdWithReaderSchemaDeserializer(
+    avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(
       schemaRegistryClient,
       isKey,
       () => schemaRegistryClient.close(),
@@ -126,27 +157,42 @@ private[avro4s] trait Avro4sSerialization {
     *
     * @param isKey true if this is a deserializer for keys, false if it is for values
     * @param includesFormatByte whether the messages are also prepended with a magic byte to specify the Avro format
+    * @param props configuration of the underlying [[KafkaAvroDeserializer]]
     */
   def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord: SchemaFor](
     schemaRegistryClient: SchemaRegistryClient,
     isKey: Boolean,
-    includesFormatByte: Boolean
+    includesFormatByte: Boolean,
+    props: Map[String, String] = Map()
   ): KafkaDeserializer[T] =
-    avroBinarySchemaIdWithReaderSchemaDeserializer(schemaRegistryClient, isKey, () => Unit, includesFormatByte)
+    avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(
+      schemaRegistryClient,
+      isKey,
+      () => Unit,
+      includesFormatByte,
+      props
+    )
 
-  private def avroBinarySchemaIdWithReaderSchemaDeserializer[T: FromRecord: SchemaFor](
+  private def avroBinarySchemaIdWithReaderSchemaDeserializerWithProps[T: FromRecord: SchemaFor](
     schemaRegistryClient: SchemaRegistryClient,
     isKey: Boolean,
     close: () => Unit,
-    includesFormatByte: Boolean
+    includesFormatByte: Boolean,
+    props: Map[String, String] = Map()
   ): KafkaDeserializer[T] = {
 
     val fromRecord = implicitly[FromRecord[T]]
     val schemaFor = implicitly[SchemaFor[T]]
 
     val d: KafkaAvroDeserializer = new KafkaAvroDeserializer(schemaRegistryClient)
+
     // The configure method needs the `schema.registry.url` even if the schema registry client has been provided
-    d.configure(Map("schema.registry.url" -> "").asJava, isKey)
+    val properties = props.get("schema.registry.url") match {
+      case Some(_) => props.asJava
+      case None    => (props + ("schema.registry.url" -> "")).asJava
+    }
+
+    d.configure(properties, isKey)
 
     deserializer(
       { (topic, data) =>
@@ -186,7 +232,12 @@ private[avro4s] trait Avro4sSerialization {
                                                 isKey: Boolean,
                                                 includesFormatByte: Boolean): KafkaSerializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close(), includesFormatByte)
+    avroBinarySchemaIdSerializerWithProps(
+      schemaRegistryClient,
+      isKey,
+      () => schemaRegistryClient.close(),
+      includesFormatByte
+    )
   }
 
   /**
@@ -196,21 +247,31 @@ private[avro4s] trait Avro4sSerialization {
     *
     * @param isKey true if this is a serializer for keys, false if it is for values
     * @param includesFormatByte whether the messages should be prepended with a magic byte to specify the Avro format
+    * @param props configuration of the underlying [[KafkaAvroSerializer]]
     */
   def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
                                                 isKey: Boolean,
-                                                includesFormatByte: Boolean): KafkaSerializer[T] =
-    avroBinarySchemaIdSerializer(schemaRegistryClient, isKey, () => Unit, includesFormatByte)
+                                                includesFormatByte: Boolean,
+                                                props: Map[String, String] = Map()): KafkaSerializer[T] =
+    avroBinarySchemaIdSerializerWithProps(schemaRegistryClient, isKey, () => Unit, includesFormatByte, props)
 
-  private def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
-                                                        isKey: Boolean,
-                                                        close: () => Unit,
-                                                        includesFormatByte: Boolean): KafkaSerializer[T] = {
-
+  private def avroBinarySchemaIdSerializerWithProps[T: ToRecord](
+    schemaRegistryClient: SchemaRegistryClient,
+    isKey: Boolean,
+    close: () => Unit,
+    includesFormatByte: Boolean,
+    props: Map[String, String] = Map()
+  ): KafkaSerializer[T] = {
     val toRecord = implicitly[ToRecord[T]]
+
     val kafkaAvroSerializer = new KafkaAvroSerializer(schemaRegistryClient)
+
     // The configure method needs the `schema.registry.url` even if the schema registry client has been provided
-    kafkaAvroSerializer.configure(Map("schema.registry.url" -> "").asJava, isKey)
+    val properties = props.get("schema.registry.url") match {
+      case Some(_) => props.asJava
+      case None    => (props + ("schema.registry.url" -> "")).asJava
+    }
+    kafkaAvroSerializer.configure(properties, isKey)
 
     def dropMagicByte(bytes: Array[Byte]): Array[Byte] =
       if (bytes != null && bytes.nonEmpty) {
@@ -265,10 +326,8 @@ private[avro4s] trait Avro4sSerialization {
                                                              isKey: Boolean): KafkaDeserializer[T] =
     avroJsonSchemaIdDeserializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey)
 
-  def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](
-    schemaRegistryClientSettings: SchemaRegistryClientSettings,
-    isKey: Boolean
-  ): KafkaDeserializer[T] = {
+  def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](schemaRegistryClientSettings: SchemaRegistryClientSettings,
+                                                             isKey: Boolean): KafkaDeserializer[T] = {
     val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
     avroJsonSchemaIdDeserializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
   }

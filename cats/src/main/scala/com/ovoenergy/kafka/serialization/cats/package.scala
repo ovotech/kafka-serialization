@@ -16,4 +16,4 @@
 
 package com.ovoenergy.kafka.serialization
 
-package object circe extends CirceSerialization
+package object cats extends SerializerInstances with DeserializerInstances

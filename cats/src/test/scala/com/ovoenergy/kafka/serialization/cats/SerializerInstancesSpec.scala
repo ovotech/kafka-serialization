@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-package com.ovoenergy.kafka.serialization
+package com.ovoenergy.kafka.serialization.cats
 
-package object circe extends CirceSerialization
+import cats.syntax.contravariant._
+import com.ovoenergy.kafka.serialization.core._
+import com.ovoenergy.kafka.serialization.testkit.UnitSpec
+
+class SerializerInstancesSpec extends UnitSpec with SerializerInstances {
+
+  "Serializer" should {
+    "be a Contravariant" in forAll { (bytes: Array[Byte], data: Int) =>
+      identitySerializer.contramap[Int](_ => bytes).serialize("DoesNotMatter", data).deep shouldBe bytes
+    }
+  }
+}

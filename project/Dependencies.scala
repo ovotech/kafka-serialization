@@ -1,8 +1,14 @@
 import sbt.Keys._
 import sbt._
-import sbt.impl.GroupArtifactID
 
 object Dependencies {
+
+  object Cats {
+
+    private val version = "1.0.1"
+
+    val core = "org.typelevel" %% "cats-core" % version
+  }
 
   object Akka {
 
@@ -75,7 +81,7 @@ object Dependencies {
 
     private val version = "0.11.0.1"
 
-    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "3.3.0" exclude ("org.slf4j", "slf4j-log4j12")
+    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "4.0.0" exclude ("org.slf4j", "slf4j-log4j12")
     val client = "org.apache.kafka" % "kafka-clients" % version exclude ("org.slf4j", "slf4j-log4j12")
   }
 
@@ -141,7 +147,14 @@ object Dependencies {
 
   val l = libraryDependencies
 
-  val core = l ++= Seq(kafka.client)
+  val core = l ++= Seq(
+    kafka.client
+  )
+
+  val cats = l ++= Seq(
+    kafka.client,
+    Cats.core
+  )
 
   val json4s = l ++= Seq(Json4s.core, Json4s.native)
 

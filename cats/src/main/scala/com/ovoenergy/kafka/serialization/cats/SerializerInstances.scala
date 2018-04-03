@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-package com.ovoenergy.kafka.serialization
+package com.ovoenergy.kafka.serialization.cats
 
-package object circe extends CirceSerialization
+import cats.Contravariant
+import com.ovoenergy.kafka.serialization.core._
+import org.apache.kafka.common.serialization.Serializer
+
+trait SerializerInstances {
+
+  implicit lazy val catsInstancesForKafkaSerializer: Contravariant[Serializer] = new Contravariant[Serializer] {
+    override def contramap[A, B](fa: Serializer[A])(f: B => A): Serializer[B] = serializer[B] { (topic: String, b: B) =>
+      fa.serialize(topic, f(b))
+    }
+  }
+
+}

@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-package com.ovoenergy.kafka.serialization
+package com.ovoenergy.kafka.serialization.cats
 
-package object circe extends CirceSerialization
+import com.ovoenergy.kafka.serialization.core._
+import com.ovoenergy.kafka.serialization.testkit.UnitSpec
+import cats.syntax.functor._
+
+class DeserializerInstancesSpec extends UnitSpec with DeserializerInstances {
+
+  "Deserializer" should {
+    "be a functor" in forAll { (x: Int, f: Int => Int) =>
+      constDeserializer(x).map(f).deserialize("DoesNotMatter", Array.empty[Byte]) shouldBe f(x)
+    }
+  }
+}
