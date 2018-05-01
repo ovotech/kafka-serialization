@@ -103,7 +103,7 @@ object Dependencies {
 
   object Avro4s {
 
-    private val version = "1.6.3"
+    private val version = "1.8.3"
 
     val core = "com.sksamuel.avro4s" %% "avro4s-core" % version
     val macros = "com.sksamuel.avro4s" %% "avro4s-macros" % version
