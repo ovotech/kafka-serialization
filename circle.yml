@@ -27,7 +27,7 @@ test:
   pre:
   - echo "concurrentRestrictions in Global += Tags.limit(Tags.Test, 2)" > parallelism.sbt
   override:
-  - sbt scalafmt::test
+  - sbt scalafmt::test test:scalafmt::test sbt:scalafmt::test
   - sbt +test:test
   post:
   - mkdir -p $CIRCLE_TEST_REPORTS/junit/

@@ -236,8 +236,6 @@ class DeserializationSpec extends UnitSpec {
     "checking for null data" when {
       "data is not null" should {
         "return Some[T]" in forAll() { string: String =>
-
-
           val result = optionalDeserializer[String](StringDeserializer)
             .deserialize(IgnoredTopic, StringSerializer.serialize(IgnoredTopic, string))
 
@@ -248,7 +246,6 @@ class DeserializationSpec extends UnitSpec {
       "data is null" should {
         "return None" in {
 
-
           val result = optionalDeserializer[String](StringDeserializer)
             .deserialize(IgnoredTopic, null)
 
@@ -258,6 +255,5 @@ class DeserializationSpec extends UnitSpec {
     }
 
   }
-
 
 }
