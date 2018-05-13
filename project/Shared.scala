@@ -13,8 +13,8 @@ object Shared {
     scmInfo := Some(
       ScmInfo(url("https://github.com/ovotech/kafka-serialization"), "git@github.com:ovotech/kafka-serialization.git")
     ),
-    scalaVersion := "2.12.4",
-    crossScalaVersions := Seq(scalaVersion.value, "2.11.11"),
+    scalaVersion := "2.12.6",
+    crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
     resolvers ++= Seq(
       Resolver.mavenLocal,
       Resolver.typesafeRepo("releases"),
