@@ -222,6 +222,17 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
 
   override def getId(subject: String, schema: Schema): Int =
     throw new UnsupportedOperationException
+
+  override  def deleteSchemaVersion(x$1: java.util.Map[String,String],x$2: String,x$3: String): Integer = throw new UnsupportedOperationException
+
+  override def deleteSchemaVersion(x$1: String,x$2: String): Integer = throw new UnsupportedOperationException
+
+  override def deleteSubject(x$1: java.util.Map[String,String],x$2: String): java.util.List[Integer] = throw new UnsupportedOperationException
+
+  override def deleteSubject(x$1: String): java.util.List[Integer] = throw new UnsupportedOperationException
+  
+  override def getAllVersions(x$1: String): java.util.List[Integer] = throw new UnsupportedOperationException
+
 }
 
 object JerseySchemaRegistryClient {
