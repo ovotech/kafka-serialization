@@ -26,9 +26,6 @@ jobs:
       - *restore-cache
       - *install-coursier
       - run:
-          name: Change test concurrency # TODO why is this not just in the repo?
-          command: echo "concurrentRestrictions in Global += Tags.limit(Tags.Test, 2)" > parallelism.sbt
-      - run:
           name: Test
           environment:
             JAVA_OPTS: "-XX:+CMSClassUnloadingEnabled -XX:MaxMetaspaceSize=512M -XX:MetaspaceSize=512M -Xms1G -Xmx1G -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:gc.log"
