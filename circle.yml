@@ -2,14 +2,14 @@ defaults:
   - &defaults
     working_directory: ~/kafka-serialisation
     docker:
-      - image: olib963/sbt-ci-image:sbt-1-1-5
-  - &dependency-cache v2-dependencies-{{ checksum "build.sbt" }}-{{ checksum "./build/coursier.sh" }}
+      - image: circleci/openjdk:8-jdk
+  - &dependency-cache v2-dep-{{ checksum "build.sbt" }}-{{ checksum "./build/coursier.sh" }}
   - &restore-cache
     restore_cache:
       keys:
         - *dependency-cache
         # fallback to using the latest cache if no exact match is found
-        - v2-dependencies-
+        - v2-dep-
   - &install-coursier
     run:
       name: Install Coursier
