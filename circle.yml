@@ -71,8 +71,16 @@ jobs:
       - *restore-cache
       - *install-coursier
       - run:
-         name: Get Bintray Credentials
-         command: ./build/bintray.sh
+          name: Configure git credentials
+          command: |
+            echo 'Adding the github host SSH key...'
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config user.name ovo-comms-circleci
+            git config user.email "hello.comms@ovoenergy.com"
+      - run:
+          name: Get Bintray Credentials
+          command: ./build/bintray.sh
       - run:
           name: Tag Release
           command: build/tag.sh
