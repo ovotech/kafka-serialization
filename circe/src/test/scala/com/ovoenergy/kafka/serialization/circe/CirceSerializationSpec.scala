@@ -27,7 +27,7 @@ import io.circe.syntax._
 class CirceSerializationSpec extends UnitSpec with CirceSerialization {
 
   "CirceSerialization" when {
-    "serializing" should {
+    "circeJsonSerializer" should {
       "write the Json body" in forAll { event: Event =>
         val serializer = circeJsonSerializer[Event]
         val bytes = serializer.serialize("Does not matter", event)
@@ -36,14 +36,30 @@ class CirceSerializationSpec extends UnitSpec with CirceSerialization {
       }
     }
 
-    "deserializing" should {
+    "circeJsonDeserializer" should {
       "parse the json" in forAll { event: Event =>
         val jsonBytes = event.asJson.noSpaces.getBytes(UTF_8)
         val deserializer = circeJsonDeserializer[Event]
-
         val deserialized = deserializer.deserialize("does not matter", jsonBytes)
 
         deserialized shouldBe event
+      }
+    }
+
+    "circeJsonDeserializerWithFallback" should {
+      "parse the json" in forAll { event: Event =>
+        val jsonBytes = event.asJson.noSpaces.getBytes(UTF_8)
+        val deserializer = circeJsonDeserializerWithFallback[Event](_ => Event("", ""))
+        val deserialized = deserializer.deserialize("does not matter", jsonBytes)
+
+        deserialized shouldBe event
+      }
+      "execute fallback function in case of failure" in forAll { event: Event =>
+        val jsonBytes = "{}".getBytes(UTF_8)
+        val deserializer = circeJsonDeserializerWithFallback[Event](_ => Event("", ""))
+        val deserialized = deserializer.deserialize("does not matter", jsonBytes)
+
+        deserialized shouldBe Event("", "")
       }
     }
   }

@@ -31,12 +31,16 @@ private[circe] trait CirceSerialization {
     data.asJson.noSpaces.getBytes(StandardCharsets.UTF_8)
   }
 
-  def circeJsonDeserializer[T: Decoder]: KafkaDeserializer[T] = deserializer { (_, data) =>
-    (for {
-      json <- parse(new String(data, StandardCharsets.UTF_8)): Either[Error, Json]
-      t <- json.as[T]: Either[Error, T]
-    } yield
-      t).fold(error => throw new RuntimeException(s"Deserialization failure: ${error.getMessage}", error), identity _)
+  def circeJsonDeserializer[T: Decoder]: KafkaDeserializer[T] =
+    circeJsonDeserializerWithFallback { error =>
+      throw new RuntimeException(s"Deserialization failure: ${error.getMessage}", error)
+    }
+
+  def circeJsonDeserializerWithFallback[T: Decoder](fallback: Error => T): KafkaDeserializer[T] = deserializer { (_, data) =>
+    parse(new String(data, StandardCharsets.UTF_8))
+      .flatMap(_.as[T])
+      .fold(fallback, identity _)
   }
+
 
 }
