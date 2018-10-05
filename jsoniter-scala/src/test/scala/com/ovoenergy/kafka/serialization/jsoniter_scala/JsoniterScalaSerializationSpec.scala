@@ -23,7 +23,7 @@ import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
 
 class JsoniterScalaSerializationSpec extends UnitSpec with JsoniterScalaSerialization {
 
-  implicit val eventCodec: JsonCodec[Event] = JsonCodecMaker.make[Event](CodecMakerConfig())
+  implicit val eventCodec: JsonValueCodec[Event] = JsonCodecMaker.make[Event](CodecMakerConfig())
 
   "JsoniterScalaSerialization" when {
     "serializing" should {
@@ -32,20 +32,20 @@ class JsoniterScalaSerializationSpec extends UnitSpec with JsoniterScalaSerializ
 
         val jsonBytes = serializer.serialize("does not matter", event)
 
-        jsonBytes.deep shouldBe write(event).deep
+        jsonBytes.deep shouldBe writeToArray(event).deep
       }
       "write prettified json" in forAll { event: Event =>
         val serializer = jsoniterScalaSerializer[Event](WriterConfig(indentionStep = 2))
 
         val jsonBytes = serializer.serialize("does not matter", event)
 
-        jsonBytes.deep shouldBe write(event, WriterConfig(indentionStep = 2)).deep
+        jsonBytes.deep shouldBe writeToArray(event, WriterConfig(indentionStep = 2)).deep
       }
     }
 
     "deserializing" should {
       "parse the json" in forAll { event: Event =>
-        val jsonBytes = write(event)
+        val jsonBytes = writeToArray(event)
         val deserializer = jsoniterScalaDeserializer[Event]()
 
         val deserialized = deserializer.deserialize("does not matter", jsonBytes)
@@ -60,7 +60,7 @@ class JsoniterScalaSerializationSpec extends UnitSpec with JsoniterScalaSerializ
             "does not matter",
             """{"name":"vjTjvnkwbdGczk7ylwtsLzfkawxsydRul9Infmapftuhn"}""".getBytes
           )
-        }.getMessage.contains("""missing required field(s) "id", offset: 0x00000037, buf:
+        }.getMessage.contains("""missing required field "id", offset: 0x00000037, buf:
             |           +-------------------------------------------------+
             |           |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |
             |+----------+-------------------------------------------------+------------------+
@@ -77,7 +77,7 @@ class JsoniterScalaSerializationSpec extends UnitSpec with JsoniterScalaSerializ
             "does not matter",
             """{"name":"vjTjvnkwbdGczk7ylwtsLzfkawxsydRul9Infmapftuhn"}""".getBytes
           )
-        }.getMessage.contains("""missing required field(s) "id", offset: 0x00000037"""))
+        }.getMessage.contains("""missing required field "id", offset: 0x00000037"""))
       }
     }
   }

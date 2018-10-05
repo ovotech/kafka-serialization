@@ -10,8 +10,8 @@ The aim of this library is to provide the Lego&trade; bricks to build a serializ
 The serializers/deserializers built by this library cannot be used in the Kafka configuration through properties, but 
 need to be passed through the Kafka Producer/Consumer constructors (It is feature IMHO).
 
-For the Avro serialization this library uses Avro4s while for JSON it supports Json4s, Circe and Spray out of the box. 
-It is quite easy to add support for other libraries as well.
+For the Avro serialization this library uses Avro4s while for JSON it supports Jsoniter-Scala, Json4s, Circe and Spray 
+out of the box. It is quite easy to add support for other libraries as well.
 
 ## Modules
 The library is composed by these modules:
@@ -38,7 +38,7 @@ import sbt.Keys.
 resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= {
-  val kafkaSerializationV = "0.1.23" // see the Maven badge above for the latest version
+  val kafkaSerializationV = "0.3.8" // see the Maven badge above for the latest version
   Seq(
     "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
     "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support

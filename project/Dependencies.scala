@@ -79,15 +79,15 @@ object Dependencies {
 
   object kafka {
 
-    private val version = "0.11.0.1"
+    private val version = "1.1.0"
 
-    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "4.0.0" exclude ("org.slf4j", "slf4j-log4j12")
+    val avroSerializer = "io.confluent" % "kafka-avro-serializer" % "4.1.1" exclude ("org.slf4j", "slf4j-log4j12")
     val client = "org.apache.kafka" % "kafka-clients" % version exclude ("org.slf4j", "slf4j-log4j12")
   }
 
   object JsoniterScala {
 
-    private val version = "0.9.4"
+    private val version = "0.26.0"
 
     val macros = "com.github.plokhotnyuk.jsoniter-scala" %% "macros" % version
   }
