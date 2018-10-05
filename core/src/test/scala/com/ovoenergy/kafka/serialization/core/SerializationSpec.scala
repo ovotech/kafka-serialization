@@ -52,9 +52,7 @@ class SerializationSpec extends UnitSpec {
   "Serialization" when {
 
     "add the magic byte to the serialized data" in {
-      formatSerializer(Format.Json, StringSerializer).serialize("test", "Test")(0) should be(
-        Format.toByte(Format.Json)
-      )
+      formatSerializer(Format.Json, StringSerializer).serialize("test", "Test")(0) should be(Format.toByte(Format.Json))
     }
 
     "multiplexing the topic" when {
