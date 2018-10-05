@@ -1,41 +1,104 @@
-general:
-  artifacts:
-  - "target/test.log"
-  - "gc.log"
+defaults:
+  - &defaults
+    working_directory: ~/kafka-serialisation
+    docker:
+      - image: circleci/openjdk:8-jdk
+  - &dependency-cache v2-dep-{{ checksum "build.sbt" }}-{{ checksum "./build/coursier.sh" }}
+  - &restore-cache
+    restore_cache:
+      keys:
+        - *dependency-cache
+        # fallback to using the latest cache if no exact match is found
+        - v2-dep-
+  - &install-coursier
+    run:
+      name: Install Coursier
+      command: ./build/coursier.sh
 
-machine:
-  environment:
-    JAVA_OPTS: "-XX:+CMSClassUnloadingEnabled -XX:MaxMetaspaceSize=512M -XX:MetaspaceSize=512M -Xms1G -Xmx1G -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:gc.log"
-    TEST_TIMEFACTOR: 5.0
-  java:
-    version: oraclejdk8
+version: 2
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - *restore-cache
+      - *install-coursier
+      - run:
+          name: Test
+          environment:
+            JAVA_OPTS: "-XX:+CMSClassUnloadingEnabled -XX:MaxMetaspaceSize=512M -XX:MetaspaceSize=512M -Xms1G -Xmx1G -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:gc.log"
+            TEST_TIMEFACTOR: 5.0
+          command: sbt +test:test
+      - save_cache:
+          paths:
+            - ~/.ivy2
+            - ~/.sbt
+            - ~/.coursier
+            - target/resolution-cache
+            - project/target/resolution-cache
+          key: *dependency-cache
+      - persist_to_workspace:
+          root: .
+          paths: # TODO is there a better way to do this? So that the publish step doesn't have to recompile everything.
+            - target
+            - project/target
+            - avro/target
+            - avro4s/target
+            - cats/target
+            - circe/target
+            - core/target
+            - doc/target
+            - json4s/target
+            - jsoniter-scala/target
+            - spray/target
+            - testkit/target
+  format-check:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Scalafmt Check
+          command: sbt scalafmt::test test:scalafmt::test sbt:scalafmt::test
 
-dependencies:
-  pre:
-    - build/coursier.sh
-    - build/bintray.sh
-  cache_directories:
-    - "~/.ivy2"
-    - "~/.sbt"
-    - "~/.coursier"
-    - "target/resolution-cache"
-    - "project/target/resolution-cache"
-  override:
-    - sbt +test:compile
+  publish:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - *restore-cache
+      - *install-coursier
+      - run:
+          name: Configure git credentials
+          command: |
+            echo 'Adding the github host SSH key...'
+            mkdir -p -m 0700 ~/.ssh/
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config user.name ovo-comms-circleci
+            git config user.email "hello.comms@ovoenergy.com"
+      - run:
+          name: Get Bintray Credentials
+          command: ./build/bintray.sh
+      - run:
+          name: Tag Release
+          command: build/tag.sh
+      - run:
+          name: Publish
+          command: build/publish.sh
 
-test:
-  pre:
-  - echo "concurrentRestrictions in Global += Tags.limit(Tags.Test, 2)" > parallelism.sbt
-  override:
-  - sbt scalafmt::test test:scalafmt::test sbt:scalafmt::test
-  - sbt +test:test
-  post:
-  - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-  - find . -type f -regex ".*/target/test-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
-
-deployment:
-  publish-master:
-    branch: master
-    commands:
-      - build/tag.sh
-      - build/publish.sh
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - format-check
+      - publish:
+          requires:
+            - build
+            - format-check
+          filters:
+            branches:
+              only:
+                - master
