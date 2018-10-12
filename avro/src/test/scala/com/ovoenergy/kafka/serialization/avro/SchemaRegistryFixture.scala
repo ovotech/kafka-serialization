@@ -28,32 +28,52 @@ trait SchemaRegistryFixture extends BeforeAndAfterEach { _: Suite with WireMockF
   override protected def beforeEach(): Unit = {
     super.beforeEach()
 
-    // Some default behaviours
-
     stubFor(
       get(urlMatching(s"/schemas/ids/.*"))
-        .atPriority(Int.MaxValue)
         .willReturn(
           aResponse()
             .withStatus(404)
             .withBody("""{
-              |  "error_code": 40403,
-              |  "message": "Schema not found"
-              |}
-            """.stripMargin)
+                        |  "error_code": 40403,
+                        |  "message": "Schema not found"
+                        |}
+                      """.stripMargin)
             .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
         )
+        .atPriority(Int.MaxValue)
     )
 
     stubFor(
-      post(urlMatching("/subjects/.*/versions"))
-        .atPriority(Int.MaxValue)
+      get(urlMatching(s"/subjects/.*/versions"))
         .willReturn(
           aResponse()
-            .withBody("{\"id\": 999}")
+            .withStatus(404)
+            .withBody("""{
+                        |   "error_code": 40401,
+                        |   "message": "Subject not found."
+                        |}
+                      """.stripMargin)
             .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
         )
+        .atPriority(Int.MaxValue)
+
     )
+
+    stubFor(
+      get(urlMatching(s"/subjects/.*/versions/.*"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            .withBody("""{
+                        |   "error_code": 40403,
+                        |   "message": "Version not found."
+                        |}
+                      """.stripMargin)
+            .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
+        )
+        .atPriority(Int.MaxValue)
+    )
+
   }
 
   def givenSchema(schemaId: Int, schema: Schema): Unit = {
@@ -67,6 +87,17 @@ trait SchemaRegistryFixture extends BeforeAndAfterEach { _: Suite with WireMockF
           aResponse()
             .withBody(schemaBody)
             .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
+        )
+    )
+  }
+
+  def givenBasicAuthenticationIsNeeded = {
+    stubFor(
+      any(anyUrl)
+        .withHeader("Authorization", absent())
+        .willReturn(
+          aResponse()
+            .withStatus(401)
         )
     )
   }
@@ -85,6 +116,90 @@ trait SchemaRegistryFixture extends BeforeAndAfterEach { _: Suite with WireMockF
             .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
         )
     )
+
+  def givenNonExistingSubject(subject: String): Unit = {
+    stubFor(
+      get(urlMatching(s"/subjects/$subject/versions"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            .withBody("""{
+                        |   "error_code": 40401,
+                        |   "message": "Subject not found."
+                        |}
+                      """.stripMargin)
+            .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
+        )
+    )
+
+    stubFor(
+      get(urlMatching(s"/subjects/$subject/versions/.*"))
+        .willReturn(
+          aResponse()
+            .withStatus(404)
+            .withBody("""{
+                        |   "error_code": 40401,
+                        |   "message": "Subject not found."
+                        |}
+                      """.stripMargin)
+            .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
+        )
+    )
+  }
+
+  def givenSubjectLastVersionId(subject: String, lastVersionId: Int): Unit = {
+
+    val versions = (1 to lastVersionId).toList
+
+    stubFor(
+      get(urlMatching(s"/subjects/$subject/versions"))
+        .willReturn(
+          aResponse()
+            .withBody(versions.mkString("[", ",", "]"))
+            .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
+        )
+    )
+  }
+
+  def givenSubjectVersion(subject: String, versionId: Int, schemaId: Int, schema: Schema, isLast: Boolean = false): Unit = {
+
+    val escapedSchema = schema.toString.replace(""""""", """\"""")
+
+    stubFor(
+      get(urlMatching(s"/subjects/$subject/versions/$versionId"))
+        .willReturn(
+          aResponse()
+            .withBody(
+              s"""
+                |{
+                |  "subject": "$subject",
+                |  "id": $schemaId,
+                |  "version": $versionId,
+                |  "schema": "$escapedSchema"
+                |}
+              """.stripMargin)
+            .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
+        )
+    )
+
+    stubFor(
+      get(urlMatching(s"/subjects/$subject/versions/latest"))
+        .willReturn(
+          aResponse()
+            .withBody(
+              s"""
+                 |{
+                 |  "subject": "$subject",
+                 |  "id": $schemaId,
+                 |  "version": $versionId,
+                 |  "schema": "$escapedSchema"
+                 |}
+              """.stripMargin)
+            .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
+        )
+    )
+  }
+
 
   // TODO match on the schema
   def givenNextSchemaId(subject: String, schemaId: Int): Unit =
@@ -131,7 +246,7 @@ trait SchemaRegistryFixture extends BeforeAndAfterEach { _: Suite with WireMockF
           aResponse()
             .withStatus(status)
             .withBody(body)
-            .withHeader("Content-Type", "application/json")
+            .withHeader("Content-Type", "application/vnd.schemaregistry.v1+json")
         )
     )
 

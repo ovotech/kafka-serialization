@@ -18,12 +18,25 @@ package com.ovoenergy.kafka.serialization.testkit
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.common.Notifier
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
+import org.slf4j.LoggerFactory
 
 trait WireMockFixture extends BeforeAndAfterAll with BeforeAndAfterEach { self: Suite =>
 
-  private lazy val wireMockServer: WireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort())
+  private val log = LoggerFactory.getLogger(getClass)
+
+  private lazy val wireMockServer: WireMockServer = new WireMockServer(
+    WireMockConfiguration
+      .options()
+      .dynamicPort()
+      .notifier(new Notifier {
+        override def info(message: String): Unit = log.info(message)
+        override def error(message: String): Unit = log.error(message)
+        override def error(message: String, t: Throwable): Unit = log.error(message, t)
+      })
+  )
 
   val wireMockHost: String = "localhost"
   def wireMockPort: Int = wireMockServer.port()

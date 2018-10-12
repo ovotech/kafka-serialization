@@ -1,6 +1,11 @@
+
+val okHttpVersion = "3.11.0"
+val avro4sVersion = "1.8.3"
+val minimalJasonVersion = "0.9.5"
+
 lazy val `kafka-serialization` = project
   .in(file("."))
-  .aggregate(avro, avro4s, cats, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
+  .aggregate(avro, avroJersey2, avro4s, avroOkHttp, cats, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
   .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(Shared.settings: _*)
   .settings(name := "kafka-serialization")
@@ -10,6 +15,8 @@ lazy val doc = project
   .in(file("doc"))
   .dependsOn(
     avro % "tut",
+    avroJersey2 % "tut",
+    avroOkHttp % "tut",
     avro4s % "tut",
     cats % "tut",
     circe % "tut",
@@ -24,7 +31,7 @@ lazy val doc = project
     name := "kafka-serialization-doc",
     publishArtifact := false,
     publish := {},
-    tutTargetDirectory := (baseDirectory.value).getParentFile
+    tutTargetDirectory := baseDirectory.value.getParentFile
   )
   .settings(Dependencies.doc)
 
@@ -58,15 +65,47 @@ lazy val avro = project
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
 
+lazy val avroJersey2 = project
+  .dependsOn(avro % "test->test;compile->compile")
+  .in(file("avro-jersey-2"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .settings(Shared.settings: _*)
+  .settings(name := "kafka-serialization-avro-jersey-2")
+  .settings(Dependencies.avro)
+  .settings(Bintray.settings: _*)
+  .settings(Git.settings: _*)
+
+lazy val avroOkHttp = project
+  .dependsOn(avro % "test->test;compile->compile")
+  .in(file("avro-okhttp"))
+  .dependsOn(core, testkit % Test)
+  .enablePlugins(GitVersioning, GitBranchPrompt)
+  .settings(Shared.settings: _*)
+  .settings(name := "kafka-serialization-avro-okhttp")
+  .settings(Bintray.settings: _*)
+  .settings(Git.settings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.squareup.okhttp3" % "okhttp" % okHttpVersion,
+      "com.eclipsesource.minimal-json" % "minimal-json" % minimalJasonVersion,
+    )
+  )
+
+
 lazy val avro4s = project
   .in(file("avro4s"))
-  .dependsOn(core, avro, testkit % Test)
+  .dependsOn(core, avro, avroOkHttp % Test, testkit % Test)
   .enablePlugins(GitVersioning, GitBranchPrompt)
   .settings(Shared.settings: _*)
   .settings(name := "kafka-serialization-avro4s")
-  .settings(Dependencies.avro4s)
   .settings(Bintray.settings: _*)
   .settings(Git.settings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.sksamuel.avro4s" %% "avro4s-core" % avro4sVersion
+    )
+  )
 
 lazy val `jsoniter-scala` = project
   .in(file("jsoniter-scala"))

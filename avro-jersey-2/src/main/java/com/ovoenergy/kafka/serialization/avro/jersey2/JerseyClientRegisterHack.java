@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ovoenergy.kafka.serialization.avro;
+package com.ovoenergy.kafka.serialization.avro.jersey2;
 
 import javax.ws.rs.client.ClientBuilder;
 

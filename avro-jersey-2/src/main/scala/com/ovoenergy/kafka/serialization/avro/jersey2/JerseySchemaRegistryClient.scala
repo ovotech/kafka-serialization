@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.ovoenergy.kafka.serialization.avro
+package com.ovoenergy.kafka.serialization.avro.jersey2
 
 import java.util
 import java.util.concurrent.ExecutionException
+
+import com.ovoenergy.kafka.serialization.avro.jersey2.JerseySchemaRegistryClient.SchemaCacheKey
+import com.ovoenergy.kafka.serialization.avro.{Authentication, SchemaRegistryClientSettings}
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException
+import io.confluent.kafka.schemaregistry.client.{SchemaMetadata, SchemaRegistryClient}
 import javax.json.{Json, JsonArray, JsonObject, JsonString}
 import javax.ws.rs.client.{Client, ClientBuilder, Entity}
 import javax.ws.rs.core.Response
-
-import com.ovoenergy.kafka.serialization.avro.JerseySchemaRegistryClient._
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException
-import io.confluent.kafka.schemaregistry.client.{SchemaMetadata, SchemaRegistryClient}
 import jersey.repackaged.com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 import org.apache.avro.Schema
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 /**
   * Implements the [[SchemaRegistryClient]] interface using Jersey client.
