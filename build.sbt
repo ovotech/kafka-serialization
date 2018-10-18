@@ -54,6 +54,7 @@ lazy val `kafka-serialization` = project
           "avro4s"
         ),
         releaseEarlyWith := BintrayPublisher,
+        releaseEarlyNoGpg := true,
         releaseEarlyEnableSyncToMaven := false
       )
     )
