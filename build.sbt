@@ -33,7 +33,7 @@ lazy val `kafka-serialization` = project
             url("https://github.com/filosganga")
           )
         ),
-        scalaVersion := "2.12.6",
+        scalaVersion := "2.12.7",
         crossScalaVersions += "2.11.12",
         resolvers ++= Seq(
           Resolver.mavenLocal,
