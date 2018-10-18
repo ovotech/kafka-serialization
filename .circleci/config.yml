@@ -43,6 +43,10 @@ jobs:
     - *save_dependencies_cache
 
     - run:
+        name: Scalafmt Check
+        command: sbt scalafmt::test test:scalafmt::test sbt:scalafmt::test
+
+    - run:
         name: Compile
         command: sbt +test:compile
 
@@ -88,16 +92,6 @@ jobs:
       - store_artifacts:
           path: target/gc.log
 
-  format_check:
-    <<: *defaults
-    steps:
-
-      - checkout
-
-      - run:
-          name: Scalafmt Check
-          command: sbt scalafmt::test test:scalafmt::test sbt:scalafmt::test
-
   publish:
 
     <<: *defaults
@@ -129,12 +123,10 @@ workflows:
       - unit_test:
           requires:
           - build
-      - format_check
       - publish:
           requires:
             - build
             - unit_test
-            - format_check
           filters:
             branches:
               only:
