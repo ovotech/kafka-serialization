@@ -1,3 +1,5 @@
+version: 2
+
 defaults:
   - &defaults
     docker:
@@ -28,6 +30,7 @@ defaults:
         git config user.email "hello.comms@ovoenergy.com"
 
 
+jobs:
   build:
     <<: *defaults
 
