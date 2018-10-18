@@ -1,0 +1,140 @@
+defaults:
+  - &defaults
+    docker:
+      - image: circleci/openjdk:8-jdk
+  - &save_dependencies_cache
+    save_cache:
+      paths:
+      - ~/.ivy2
+      - ~/.sbt
+      - target/resolution-cache
+      - project/target/resolution-cache
+        key: dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
+  - &restore_dependencies_cache
+    restore_cache:
+      keys:
+        - dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
+        - dependencies-{{ .Branch }}
+        - dependencies
+
+  - &configure_git_credetials
+    run:
+      name: Configure git credentials
+      command: |
+        echo 'Adding the github host SSH key...'
+        mkdir -p -m 0700 ~/.ssh/
+        ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+        git config user.name ovo-comms-circleci
+        git config user.email "hello.comms@ovoenergy.com"
+
+
+  build:
+    <<: *defaults
+
+    steps:
+
+    - checkout
+
+    - *restore_dependencies_cache
+
+    - run: sbt +update
+
+    - *save_dependencies_cache
+
+    - run:
+        name: Compile
+        command: sbt +test:compile
+
+    - persist_to_workspace:
+        root: .
+        paths: # TODO is there a better way to do this? So that the publish step doesn't have to recompile everything.
+        - target
+        - project/target
+        - avro/target
+        - avro4s/target
+        - cats/target
+        - circe/target
+        - core/target
+        - doc/target
+        - json4s/target
+        - jsoniter-scala/target
+        - spray/target
+        - testkit/target
+
+  unit_test:
+
+    <<: *defaults
+
+    environment:
+      JAVA_OPTS: "-XX:+CMSClassUnloadingEnabled -XX:MaxMetaspaceSize=512M -XX:MetaspaceSize=512M -Xms1G -Xmx1G -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:target/gc.log"
+      TEST_TIME_FACTOR: 5.0
+
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - *restore_dependencies_cache
+
+      - run:
+          name: Test
+          command: sbt +test:test
+
+      - store_test_results:
+          path: target/test-reports
+
+      - store_artifacts:
+          path: target/gc.log
+
+  format_check:
+    <<: *defaults
+    steps:
+
+      - checkout
+
+      - run:
+          name: Scalafmt Check
+          command: sbt scalafmt::test test:scalafmt::test sbt:scalafmt::test
+
+  publish:
+
+    <<: *defaults
+
+    steps:
+
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - *restore_dependencies_cache
+
+      - *configure_git_credetials
+
+      - run:
+          name: Tag Release
+          command: build/tag.sh
+
+      - run:
+          name: Release
+          command: sbt +releaseEarly
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - unit_test:
+          requires:
+          - build
+      - format-check
+      - publish:
+          requires:
+            - build
+            - unit_test
+            - format-check
+          filters:
+            branches:
+              only:
+                - master
