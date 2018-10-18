@@ -129,7 +129,7 @@ workflows:
       - unit_test:
           requires:
           - build
-      - format-check
+      - format_check
       - publish:
           requires:
             - build
