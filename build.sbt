@@ -1,7 +1,7 @@
 lazy val catsVersion = "1.0.1"
 lazy val circeVersion = "0.8.0"
 lazy val logbackVersion = "1.2.3"
-lazy val avro4sVersion = "1.8.3"
+lazy val avro4sVersion = "2.0.1"
 lazy val json4sVersion = "3.5.1"
 lazy val jerseyVersion = "2.25.1"
 lazy val slf4jVersion = "1.7.22"

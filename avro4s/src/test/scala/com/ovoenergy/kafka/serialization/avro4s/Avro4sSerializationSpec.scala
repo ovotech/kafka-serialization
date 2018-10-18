@@ -20,23 +20,16 @@ import java.io.{ByteArrayOutputStream, OutputStream}
 import java.nio.ByteBuffer
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.ovoenergy.kafka.serialization.avro4s.Avro4sSerializationSpec._
 import com.ovoenergy.kafka.serialization.testkit.UnitSpec._
 import com.ovoenergy.kafka.serialization.testkit.{UnitSpec, WireMockFixture}
-import com.sksamuel.avro4s.{AvroOutputStream, FromRecord, SchemaFor, ToRecord}
+import com.sksamuel.avro4s._
 import org.apache.avro.Schema
 
-object Avro4sSerializationSpec {
-
-  implicit val EventToRecord: ToRecord[Event] = ToRecord[Event]
-
-  implicit val EventFromRecord: FromRecord[Event] = FromRecord[Event]
-
-  implicit val EventSchemaFor: SchemaFor[Event] = SchemaFor[Event]
-
-}
-
 class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
+
+  implicit val eventSchemaFor: SchemaFor[Event] = SchemaFor.applyMacro[Event]
+  implicit val eventToRecord: ToRecord[Event] = ToRecord[Event]
+  implicit val eventFromRecord: FromRecord[Event] = FromRecord[Event]
 
   "Avro4sSerialization" when {
     "serializing binary" when {
@@ -110,7 +103,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
 
           val bytes = asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, EventSchemaFor())
+          givenSchema(schemaId, eventSchemaFor.schema)
 
           val deserialized = deserializer.deserialize(topic, bytes)
           deserialized shouldBe event
@@ -123,7 +116,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
           val deserializer = avroBinarySchemaIdDeserializer(wireMockEndpoint, isKey = false, includesFormatByte = false)
           val bytes = asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, EventSchemaFor())
+          givenSchema(schemaId, eventSchemaFor.schema)
 
           deserializer.deserialize(topic, bytes)
           deserializer.deserialize(topic, bytes)
@@ -136,7 +129,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
 
           val bytes = Array(0: Byte) ++ asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, EventSchemaFor())
+          givenSchema(schemaId, eventSchemaFor.schema)
 
           val deserialized = deserializer.deserialize(topic, bytes)
           deserialized shouldBe event
@@ -150,7 +143,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
           val deserializer = avroJsonSchemaIdDeserializer(wireMockEndpoint, isKey = false)
           val bytes = asAvroJsonWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, EventSchemaFor())
+          givenSchema(schemaId, eventSchemaFor.schema)
 
           val deserialized = deserializer.deserialize(topic, bytes)
 
@@ -164,7 +157,7 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
           val deserializer = avroJsonSchemaIdDeserializer(wireMockEndpoint, isKey = false)
           val bytes = asAvroJsonWithSchemaIdBytes(event, schemaId)
 
-          givenSchema(schemaId, EventSchemaFor())
+          givenSchema(schemaId, eventSchemaFor.schema)
 
           deserializer.deserialize(topic, bytes)
           deserializer.deserialize(topic, bytes)
@@ -190,13 +183,13 @@ class Avro4sSerializationSpec extends UnitSpec with WireMockFixture {
     )
   }
 
-  private def asAvroBinaryWithSchemaIdBytes[T: SchemaFor: ToRecord](t: T, schemaId: Int): Array[Byte] =
-    asAvroWithSchemaIdBytes(t, schemaId, AvroOutputStream.binary[T])
+  private def asAvroBinaryWithSchemaIdBytes[T : Encoder](t: T, schemaId: Int)(implicit schemaFor: SchemaFor[T]): Array[Byte] =
+    asAvroWithSchemaIdBytes(t, schemaId, out => AvroOutputStream.binary[T].to(out).build(schemaFor.schema))
 
-  private def asAvroJsonWithSchemaIdBytes[T: SchemaFor: ToRecord](t: T, schemaId: Int): Array[Byte] =
-    asAvroWithSchemaIdBytes(t, schemaId, AvroOutputStream.json[T])
+  private def asAvroJsonWithSchemaIdBytes[T : Encoder](t: T, schemaId: Int)(implicit schemaFor: SchemaFor[T]): Array[Byte] =
+    asAvroWithSchemaIdBytes(t, schemaId, out => AvroOutputStream.json[T].to(out).build(schemaFor.schema))
 
-  private def asAvroWithSchemaIdBytes[T: SchemaFor: ToRecord](
+  private def asAvroWithSchemaIdBytes[T](
     t: T,
     schemaId: Int,
     mkAvroOut: OutputStream => AvroOutputStream[T]
