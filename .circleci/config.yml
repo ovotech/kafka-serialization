@@ -9,8 +9,6 @@ defaults:
       paths:
       - ~/.ivy2
       - ~/.sbt
-      - target/resolution-cache
-      - project/target/resolution-cache
       key: dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
   - &restore_dependencies_cache
     restore_cache:
@@ -40,7 +38,7 @@ jobs:
 
     - *restore_dependencies_cache
 
-    - run: sbt +update
+    - run: sbt update
 
     - *save_dependencies_cache
 
@@ -136,7 +134,7 @@ workflows:
           requires:
             - build
             - unit_test
-            - format-check
+            - format_check
           filters:
             branches:
               only:
