@@ -11,7 +11,7 @@ defaults:
       - ~/.sbt
       - target/resolution-cache
       - project/target/resolution-cache
-        key: dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
+      key: dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
   - &restore_dependencies_cache
     restore_cache:
       keys:
