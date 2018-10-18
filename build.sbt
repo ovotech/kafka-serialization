@@ -6,7 +6,6 @@ lazy val json4sVersion = "3.5.1"
 lazy val jerseyVersion = "2.25.1"
 lazy val slf4jVersion = "1.7.22"
 
-
 lazy val `kafka-serialization` = project
   .in(file("."))
   .aggregate(avro, avro4s, cats, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
@@ -160,12 +159,7 @@ lazy val circe = project
 lazy val spray = project
   .in(file("spray"))
   .dependsOn(core, testkit % Test)
-  .settings(
-    name := "kafka-serialization-spray",
-    libraryDependencies ++= Seq(
-      "io.spray" %% "spray-json" % "1.3.3"
-    )
-  )
+  .settings(name := "kafka-serialization-spray", libraryDependencies ++= Seq("io.spray" %% "spray-json" % "1.3.3"))
 
 lazy val core = project
   .in(file("core"))
@@ -183,7 +177,5 @@ lazy val cats = project
   .dependsOn(core, testkit % Test)
   .settings(
     name := "kafka-serialization-cats",
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % catsVersion
-    )
+    libraryDependencies ++= Seq("org.typelevel" %% "cats-core" % catsVersion)
   )

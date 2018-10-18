@@ -44,7 +44,7 @@ jobs:
 
     - run:
         name: Scalafmt Check
-        command: sbt scalafmt::test test:scalafmt::test sbt:scalafmt::test
+        command: sbt scalafmtCheck test:scalafmtCheck scalafmtSbtCheck
 
     - run:
         name: Compile
