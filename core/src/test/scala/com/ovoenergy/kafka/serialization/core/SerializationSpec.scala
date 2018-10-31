@@ -91,6 +91,20 @@ class SerializationSpec extends UnitSpec {
       }
     }
 
+    "serialize Option[T]" when {
+      "the given option is Some" should {
+        "serialize the T" in forAll { s: String =>
+          optionalSerializer(StringSerializer).serialize("test", Some(s)) shouldBe StringSerializer.serialize("test", s)
+
+        }
+      }
+
+      "the given option is None" should {
+        "serialize null" in {
+          Option(optionalSerializer(StringSerializer).serialize("test", Option.empty[String])) shouldBe None
+        }
+      }
+    }
   }
 
 }

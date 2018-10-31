@@ -83,6 +83,16 @@ private[core] trait Serialization {
   def constSerializer[T](bytes: Array[Byte]): KafkaSerializer[T] = serializer(_ => bytes)
 
   /**
+    * Builds a serializer that serialize null if the given .
+    */
+  def optionalSerializer[T](ts: KafkaSerializer[T]): KafkaSerializer[Option[T]] = serializer { (topic, ot) =>
+    ot match {
+      case Some(t) => ts.serialize(topic, t)
+      case None    => null.asInstanceOf[Array[Byte]]
+    }
+  }
+
+  /**
     * Builds a serializer that always serialize null.
     */
   def nullSerializer[T]: KafkaSerializer[T] = serializer(_ => null.asInstanceOf[Array[Byte]])
