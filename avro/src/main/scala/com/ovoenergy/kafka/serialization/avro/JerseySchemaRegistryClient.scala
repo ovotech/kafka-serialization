@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response
 import com.ovoenergy.kafka.serialization.avro.JerseySchemaRegistryClient._
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException
 import io.confluent.kafka.schemaregistry.client.{SchemaMetadata, SchemaRegistryClient}
-import jersey.repackaged.com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
+import org.glassfish.jersey.internal.guava.{CacheBuilder, CacheLoader, LoadingCache}
 import org.apache.avro.Schema
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature
 import org.slf4j.LoggerFactory
@@ -52,7 +52,6 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
   private val subjectSchemaCache: LoadingCache[SchemaCacheKey, java.lang.Integer] = CacheBuilder
     .newBuilder()
     .maximumSize(settings.maxCacheSize)
-    .concurrencyLevel(settings.cacheParallelism)
     .build(new CacheLoader[SchemaCacheKey, java.lang.Integer] {
       override def load(key: SchemaCacheKey): java.lang.Integer = {
         val entity = Json
@@ -74,7 +73,6 @@ class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
   private val schemaCache: LoadingCache[java.lang.Integer, Schema] = CacheBuilder
     .newBuilder()
     .maximumSize(settings.maxCacheSize)
-    .concurrencyLevel(settings.cacheParallelism)
     .build(new CacheLoader[java.lang.Integer, Schema] {
       override def load(id: java.lang.Integer): Schema =
         processResponse(

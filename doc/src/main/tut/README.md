@@ -113,7 +113,7 @@ import scala.collection.JavaConverters._
 
 case class UserCreated(id: String, name: String, age: Int)
 
-implicit val userCreatedCodec: JsonCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig())
+implicit val userCreatedCodec: JsonValueCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig())
 
 val producer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
@@ -260,6 +260,8 @@ import com.ovoenergy.kafka.serialization.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 
+import com.sksamuel.avro4s._
+
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.CommonClientConfigs._
@@ -267,6 +269,9 @@ import org.apache.kafka.clients.CommonClientConfigs._
 
 sealed trait Event
 case class UserCreated(id: String, name: String, email: String) extends Event
+
+implicit val UserCreatedToRecord: ToRecord[UserCreated] = ToRecord[UserCreated]
+implicit val UserCreatedFromRecord: FromRecord[UserCreated] = FromRecord[UserCreated]
 
 /* This producer will produce messages in Avro binary format */
 val avroBinaryProducer = new KafkaProducer(
@@ -298,6 +303,17 @@ val avroBinaryConsumer = new KafkaConsumer(
   nullDeserializer[Unit],
   avroBinarySchemaIdDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
 )
+
+/* This consumer will be able to consume messages in Avro binary format with the magic format byte at the start and 
+ * local Schema */
+ 
+implicit val UserCreatedSchemaFor: SchemaFor[UserCreated] = SchemaFor[UserCreated]
+ 
+val avroBinaryConsumer = new KafkaConsumer(
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullDeserializer[Unit],
+  avroBinarySchemaIdWithReaderSchemaDeserializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
+)
 ```
 
 ```tut:invisible
@@ -313,12 +329,14 @@ all the demultiplexed `serialiazer` must be declared as `Deserializer[T]`.
 There are other support serializer and deserializer, you can discover them looking trough the code and the tests.
 
 ## Useful de-serializers
-In the core module there are pleanty of serializers and deserializers that handle generic cases.
+In the core module there are plenty of serializers and deserializers that handle generic cases.
 
 ### Optional deserializer
 To handle the case in which the data is null, you need to wrap the deserializer in the `optionalDeserializer`:
 
 ```tut:silent
+import org.apache.kafka.common.serialization._
+
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.circe._
 
@@ -340,13 +358,13 @@ import cats.syntax.functor._
 import cats.syntax.contravariant._
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.cats._
-import org.apache.kafka.common.serialization.{Serializer, Deserializer, IntegerSerializer}
+import org.apache.kafka.common.serialization.{Serializer, Deserializer}
 
 val intDeserializer: Deserializer[Int] = constDeserializer(5)
 val stringDeserializer: Deserializer[String] = intDeserializer.map(_.toString)
  
  
-val intSerializer: Serializer[Int] = new IntegerSerializer
+val intSerializer: Serializer[Int] = nullSerializer[Int]
 val stringSerializer: Serializer[String] = intSerializer.contramap(_.toInt)
 ```
 
