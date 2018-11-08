@@ -20,10 +20,10 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream
-import com.ovoenergy.kafka.serialization.avro.{JerseySchemaRegistryClient, SchemaRegistryClientSettings}
+import com.ovoenergy.kafka.serialization.avro.{Authentication, SchemaRegistryClientSettings}
 import com.ovoenergy.kafka.serialization.core._
 import com.sksamuel.avro4s._
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
+import io.confluent.kafka.schemaregistry.client.{CachedSchemaRegistryClient, SchemaRegistryClient}
 import io.confluent.kafka.serializers.{KafkaAvroDeserializer, KafkaAvroSerializer}
 import org.apache.avro.Schema
 import org.apache.avro.generic.{GenericDatumReader, GenericDatumWriter, GenericRecord}
@@ -56,11 +56,11 @@ private[avro4s] trait Avro4sSerialization {
   def avroBinarySchemaIdDeserializer[T: FromRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings,
                                                     isKey: Boolean,
                                                     includesFormatByte: Boolean): KafkaDeserializer[T] = {
-    val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
+    val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
     avroBinarySchemaIdDeserializerWithProps(
       schemaRegistryClient,
       isKey,
-      () => schemaRegistryClient.close(),
+      () => (),
       includesFormatByte
     )
   }
@@ -142,11 +142,11 @@ private[avro4s] trait Avro4sSerialization {
     isKey: Boolean,
     includesFormatByte: Boolean
   ): KafkaDeserializer[T] = {
-    val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
+    val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
     avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(
       schemaRegistryClient,
       isKey,
-      () => schemaRegistryClient.close(),
+      () => (),
       includesFormatByte
     )
   }
@@ -168,11 +168,12 @@ private[avro4s] trait Avro4sSerialization {
     avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(
       schemaRegistryClient,
       isKey,
-      () => Unit,
+      () => (),
       includesFormatByte,
       props
     )
 
+  @deprecated("There is no need to close the client")
   private def avroBinarySchemaIdWithReaderSchemaDeserializerWithProps[T: FromRecord: SchemaFor](
     schemaRegistryClient: SchemaRegistryClient,
     isKey: Boolean,
@@ -231,11 +232,11 @@ private[avro4s] trait Avro4sSerialization {
   def avroBinarySchemaIdSerializer[T: ToRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings,
                                                 isKey: Boolean,
                                                 includesFormatByte: Boolean): KafkaSerializer[T] = {
-    val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
+    val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
     avroBinarySchemaIdSerializerWithProps(
       schemaRegistryClient,
       isKey,
-      () => schemaRegistryClient.close(),
+      () => (),
       includesFormatByte
     )
   }
@@ -297,14 +298,15 @@ private[avro4s] trait Avro4sSerialization {
     schemaRegistryClientSettings: SchemaRegistryClientSettings,
     isKey: Boolean
   ): KafkaDeserializer[T] = {
-    val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroJsonSchemaIdDeserializerWithReaderSchema(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
+    val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
+    avroJsonSchemaIdDeserializerWithReaderSchema(schemaRegistryClient, isKey, () => ())
   }
 
   def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
                                                                   isKey: Boolean): KafkaDeserializer[T] =
     avroJsonSchemaIdDeserializerWithReaderSchema(schemaRegistryClient, isKey, () => Unit)
 
+  @deprecated("There is no need to close the client")
   private def avroJsonSchemaIdDeserializerWithReaderSchema[T: FromRecord](schemaRegistryClient: SchemaRegistryClient,
                                                                           isKey: Boolean,
                                                                           close: () => Unit): KafkaDeserializer[T] =
@@ -328,8 +330,8 @@ private[avro4s] trait Avro4sSerialization {
 
   def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](schemaRegistryClientSettings: SchemaRegistryClientSettings,
                                                              isKey: Boolean): KafkaDeserializer[T] = {
-    val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroJsonSchemaIdDeserializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
+    val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
+    avroJsonSchemaIdDeserializer(schemaRegistryClient, isKey, () => ())
   }
 
   def avroJsonSchemaIdDeserializer[T: FromRecord: SchemaFor](schemaRegistryClient: SchemaRegistryClient,
@@ -358,8 +360,8 @@ private[avro4s] trait Avro4sSerialization {
 
   def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClientSettings: SchemaRegistryClientSettings,
                                               isKey: Boolean): KafkaSerializer[T] = {
-    val schemaRegistryClient = JerseySchemaRegistryClient(schemaRegistryClientSettings)
-    avroJsonSchemaIdSerializer(schemaRegistryClient, isKey, () => schemaRegistryClient.close())
+    val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
+    avroJsonSchemaIdSerializer(schemaRegistryClient, isKey, () => ())
   }
 
   def avroJsonSchemaIdSerializer[T: ToRecord](schemaRegistryClient: SchemaRegistryClient,
@@ -392,5 +394,19 @@ private[avro4s] trait Avro4sSerialization {
 
       ByteBuffer.allocate(4).putInt(schemaId).array() ++ bout.toByteArray
     }, close)
+  }
+
+  private def initSchemaRegistryClient(settings: SchemaRegistryClientSettings): SchemaRegistryClient = {
+    val config = settings.authentication match {
+      case Authentication.Basic(username, password) =>
+        Map(
+          "basic.auth.credentials.source" -> "USER_INFO",
+          "basic.auth.user.info"->s"$username:$password"
+        )
+      case Authentication.None =>
+        Map.empty[String, String]
+    }
+
+    new CachedSchemaRegistryClient(settings.endpoint, settings.maxCacheSize, config.asJava)
   }
 }

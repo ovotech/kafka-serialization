@@ -42,6 +42,7 @@ import scala.util.control.NonFatal
   *
   * It implements only a subset of the [[SchemaRegistryClient]] interface.
   */
+@deprecated
 class JerseySchemaRegistryClient(settings: SchemaRegistryClientSettings)
     extends SchemaRegistryClient
     with AutoCloseable {
