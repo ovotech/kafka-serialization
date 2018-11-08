@@ -384,7 +384,10 @@ private[avro4s] trait Avro4sSerialization {
   private def initSchemaRegistryClient(settings: SchemaRegistryClientSettings): SchemaRegistryClient = {
     val config = settings.authentication match {
       case Authentication.Basic(username, password) =>
-        Map("basic.auth.credentials.source" -> "USER_INFO", "basic.auth.user.info" -> s"$username:$password")
+        Map(
+          "basic.auth.credentials.source" -> "USER_INFO",
+          "schema.registry.basic.auth.user.info" -> s"$username:$password"
+        )
       case Authentication.None =>
         Map.empty[String, String]
     }
