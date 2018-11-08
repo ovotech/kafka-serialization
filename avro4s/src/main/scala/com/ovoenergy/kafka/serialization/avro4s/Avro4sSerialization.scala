@@ -57,12 +57,7 @@ private[avro4s] trait Avro4sSerialization {
                                                     isKey: Boolean,
                                                     includesFormatByte: Boolean): KafkaDeserializer[T] = {
     val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdDeserializerWithProps(
-      schemaRegistryClient,
-      isKey,
-      () => (),
-      includesFormatByte
-    )
+    avroBinarySchemaIdDeserializerWithProps(schemaRegistryClient, isKey, () => (), includesFormatByte)
   }
 
   /**
@@ -143,12 +138,7 @@ private[avro4s] trait Avro4sSerialization {
     includesFormatByte: Boolean
   ): KafkaDeserializer[T] = {
     val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(
-      schemaRegistryClient,
-      isKey,
-      () => (),
-      includesFormatByte
-    )
+    avroBinarySchemaIdWithReaderSchemaDeserializerWithProps(schemaRegistryClient, isKey, () => (), includesFormatByte)
   }
 
   /**
@@ -233,12 +223,7 @@ private[avro4s] trait Avro4sSerialization {
                                                 isKey: Boolean,
                                                 includesFormatByte: Boolean): KafkaSerializer[T] = {
     val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
-    avroBinarySchemaIdSerializerWithProps(
-      schemaRegistryClient,
-      isKey,
-      () => (),
-      includesFormatByte
-    )
+    avroBinarySchemaIdSerializerWithProps(schemaRegistryClient, isKey, () => (), includesFormatByte)
   }
 
   /**
@@ -399,10 +384,7 @@ private[avro4s] trait Avro4sSerialization {
   private def initSchemaRegistryClient(settings: SchemaRegistryClientSettings): SchemaRegistryClient = {
     val config = settings.authentication match {
       case Authentication.Basic(username, password) =>
-        Map(
-          "basic.auth.credentials.source" -> "USER_INFO",
-          "basic.auth.user.info"->s"$username:$password"
-        )
+        Map("basic.auth.credentials.source" -> "USER_INFO", "basic.auth.user.info" -> s"$username:$password")
       case Authentication.None =>
         Map.empty[String, String]
     }
