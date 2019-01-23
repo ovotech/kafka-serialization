@@ -168,7 +168,7 @@ lazy val core = project
   .settings(
     name := "kafka-serialization-core",
     libraryDependencies ++= Seq(
-      "org.apache.kafka" % "kafka-clients" % "1.1.0" exclude ("org.slf4j", "slf4j-log4j12"),
+      "org.apache.kafka" % "kafka-clients" % "2.1.0" exclude ("org.slf4j", "slf4j-log4j12"),
       "org.slf4j" % "slf4j-api" % slf4jVersion,
     )
   )
