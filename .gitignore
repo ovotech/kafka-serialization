@@ -7,6 +7,10 @@
 .ensime
 .ensime_cache/
 
+# Metals
+.metals/
+.bloop/
+
 # Sbt
 target/
 .history
