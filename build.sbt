@@ -3,7 +3,6 @@ lazy val circeVersion = "0.8.0"
 lazy val logbackVersion = "1.2.3"
 lazy val avro4sVersion = "1.8.3"
 lazy val json4sVersion = "3.5.1"
-lazy val jerseyVersion = "2.25.1"
 lazy val slf4jVersion = "1.7.22"
 
 lazy val `kafka-serialization` = project
@@ -117,11 +116,7 @@ lazy val avro = project
   .settings(
     name := "kafka-serialization-avro",
     libraryDependencies ++= Seq(
-      "io.confluent" % "kafka-avro-serializer" % "4.1.1" exclude ("org.slf4j", "slf4j-log4j12"),
-      "org.glassfish.jersey.core" % "jersey-client" % jerseyVersion,
-      "org.glassfish.jersey.media" % "jersey-media-json-processing" % jerseyVersion,
-      "org.glassfish.jersey.connectors" % "jersey-apache-connector" % jerseyVersion,
-      "org.glassfish.jersey.connectors" % "jersey-netty-connector" % jerseyVersion
+      "io.confluent" % "kafka-avro-serializer" % "4.1.1" exclude ("org.slf4j", "slf4j-log4j12")
     )
   )
 
