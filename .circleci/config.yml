@@ -55,6 +55,7 @@ jobs:
         paths: # TODO is there a better way to do this? So that the publish step doesn't have to recompile everything.
         - target
         - project/target
+        - project/project/target
         - avro/target
         - avro4s/target
         - cats/target
