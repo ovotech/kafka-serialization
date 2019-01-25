@@ -48,7 +48,7 @@ jobs:
 
     - run:
         name: Compile
-        command: sbt +test:compile
+        command: sbt test:compile
 
     - persist_to_workspace:
         root: .
@@ -84,7 +84,7 @@ jobs:
 
       - run:
           name: Test
-          command: sbt +test:test
+          command: sbt test:test
 
       - store_test_results:
           path: target/test-reports
@@ -113,7 +113,7 @@ jobs:
 
       - run:
           name: Release
-          command: sbt +releaseEarly
+          command: sbt releaseEarly
 
 workflows:
   version: 2
