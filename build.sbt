@@ -1,10 +1,19 @@
-lazy val catsVersion = "1.0.1"
-lazy val circeVersion = "0.8.0"
+lazy val catsVersion = "1.5.0"
+lazy val circeVersion = "0.11.1"
 lazy val logbackVersion = "1.2.3"
-lazy val avro4sVersion = "1.8.3"
+lazy val avro4sVersion = "1.9.0"
 lazy val avro4s2Version = "2.0.3"
-lazy val json4sVersion = "3.5.1"
-lazy val slf4jVersion = "1.7.22"
+lazy val json4sVersion = "3.6.3"
+lazy val slf4jVersion = "1.7.25"
+lazy val sprayJsonVersion = "1.3.5"
+lazy val kafkaClientVersion = "2.1.0"
+lazy val jsoninterScalaVersion = "0.28.1"
+lazy val confluentPlatformVersion = "5.1.0"
+lazy val scalaTestVersion = "3.0.5"
+lazy val scalaCheckVersion = "1.14.0"
+lazy val scalaMockVersion = "3.6.0"
+lazy val wiremockVersion = "2.20.0"
+lazy val scalaArmVersion = "2.0"
 
 lazy val `kafka-serialization` = project
   .in(file("."))
@@ -33,7 +42,7 @@ lazy val `kafka-serialization` = project
             url("https://github.com/filosganga")
           )
         ),
-        scalaVersion := "2.12.7",
+        scalaVersion := "2.12.8",
         crossScalaVersions += "2.11.12",
         resolvers ++= Seq(
           Resolver.mavenLocal,
@@ -63,17 +72,17 @@ lazy val `kafka-serialization` = project
 
 lazy val doc = project
   .in(file("doc"))
-  .dependsOn(
-    avro % "tut",
-    avro4s % "tut",
-    cats % "tut",
-    circe % "tut",
-    core % "tut",
-    json4s % "tut",
-    `jsoniter-scala` % "tut",
-    spray % "tut"
-  )
   .enablePlugins(TutPlugin)
+  .dependsOn(
+    avro % Tut,
+    avro4s % Tut,
+    cats % Tut,
+    circe % Tut,
+    core % Tut,
+    json4s % Tut,
+    `jsoniter-scala` % Tut,
+    spray % Tut
+  )
   .settings(
     name := "kafka-serialization-doc",
     publishArtifact := false,
@@ -87,11 +96,11 @@ lazy val testkit = project
   .settings(
     name := "kafka-serialization-testkit",
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.1",
-      "org.scalacheck" %% "scalacheck" % "1.13.4",
-      "org.scalamock" %% "scalamock-scalatest-support" % "3.4.2",
-      "com.github.tomakehurst" % "wiremock" % "2.6.0",
-      "com.jsuereth" %% "scala-arm" % "2.0",
+      "org.scalatest" %% "scalatest" % scalaTestVersion,
+      "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
+      "org.scalamock" %% "scalamock-scalatest-support" % scalaMockVersion,
+      "com.github.tomakehurst" % "wiremock" % wiremockVersion,
+      "com.jsuereth" %% "scala-arm" % scalaArmVersion,
       "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
       "ch.qos.logback" % "logback-core" % logbackVersion,
@@ -117,7 +126,7 @@ lazy val avro = project
   .settings(
     name := "kafka-serialization-avro",
     libraryDependencies ++= Seq(
-      "io.confluent" % "kafka-avro-serializer" % "4.1.1" exclude ("org.slf4j", "slf4j-log4j12")
+      "io.confluent" % "kafka-avro-serializer" % confluentPlatformVersion exclude ("org.slf4j", "slf4j-log4j12")
     )
   )
 
@@ -150,7 +159,7 @@ lazy val `jsoniter-scala` = project
   .dependsOn(core, testkit % Test)
   .settings(
     name := "kafka-serialization-jsoniter-scala",
-    libraryDependencies ++= Seq("com.github.plokhotnyuk.jsoniter-scala" %% "macros" % "0.26.0")
+    libraryDependencies ++= Seq("com.github.plokhotnyuk.jsoniter-scala" %% "macros" % jsoninterScalaVersion)
   )
 
 lazy val circe = project
@@ -168,7 +177,10 @@ lazy val circe = project
 lazy val spray = project
   .in(file("spray"))
   .dependsOn(core, testkit % Test)
-  .settings(name := "kafka-serialization-spray", libraryDependencies ++= Seq("io.spray" %% "spray-json" % "1.3.3"))
+  .settings(
+    name := "kafka-serialization-spray",
+    libraryDependencies ++= Seq("io.spray" %% "spray-json" % sprayJsonVersion)
+  )
 
 lazy val core = project
   .in(file("core"))
@@ -176,7 +188,7 @@ lazy val core = project
   .settings(
     name := "kafka-serialization-core",
     libraryDependencies ++= Seq(
-      "org.apache.kafka" % "kafka-clients" % "2.1.0" exclude ("org.slf4j", "slf4j-log4j12"),
+      "org.apache.kafka" % "kafka-clients" % kafkaClientVersion exclude ("org.slf4j", "slf4j-log4j12"),
       "org.slf4j" % "slf4j-api" % slf4jVersion,
     )
   )

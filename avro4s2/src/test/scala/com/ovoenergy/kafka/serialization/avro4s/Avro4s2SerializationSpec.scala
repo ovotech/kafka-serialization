@@ -34,7 +34,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
       "is value serializer" should {
         "register the schema to the schemaRegistry for value" in forAll { (topic: String, event: Event) =>
           testWithPostSchemaExpected(s"$topic-value") {
-            val serializer = avroBinarySchemaIdSerializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
+            val serializer =
+              avroBinarySchemaIdSerializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
             serializer.serialize(topic, event)
           }
         }
@@ -56,7 +57,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
       "is key serializer" should {
         "register the schema to the schemaRegistry for key" in forAll { (topic: String, event: Event) =>
           testWithPostSchemaExpected(s"$topic-key") {
-            val serializer = avroBinarySchemaIdSerializer[Event](wireMockEndpoint, isKey = true, includesFormatByte = false)
+            val serializer =
+              avroBinarySchemaIdSerializer[Event](wireMockEndpoint, isKey = true, includesFormatByte = false)
             serializer.serialize(topic, event)
           }
         }
@@ -67,7 +69,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
       "the value is serializer" should {
         "register the schema to the schemaRegistry for value" in forAll { (topic: String, event: Event) =>
           testWithPostSchemaExpected(s"$topic-value") {
-            val serializer = avroJsonSchemaIdSerializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
+            val serializer =
+              avroJsonSchemaIdSerializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
             serializer.serialize(topic, event)
           }
         }
@@ -77,7 +80,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
             whenever(events.length > 1) {
               // This verifies that the HTTP cal to the schema registry happen only once.
               testWithPostSchemaExpected(s"$topic-value") {
-                val serializer = avroJsonSchemaIdSerializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
+                val serializer =
+                  avroJsonSchemaIdSerializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
                 events.foreach(event => serializer.serialize(topic, event))
               }
             }
@@ -87,7 +91,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
       "is key serializer" should {
         "register the schema to the schemaRegistry for key" in forAll { (topic: String, event: Event) =>
           testWithPostSchemaExpected(s"$topic-key") {
-            val serializer = avroJsonSchemaIdSerializer[Event](wireMockEndpoint, isKey = true, includesFormatByte = false)
+            val serializer =
+              avroJsonSchemaIdSerializer[Event](wireMockEndpoint, isKey = true, includesFormatByte = false)
             serializer.serialize(topic, event)
           }
         }
@@ -97,7 +102,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
     "deserializing binary" when {
       "the writer schema is used" should {
         "read the schema from the registry" in forAll { (topic: String, schemaId: Int, event: Event) =>
-          val deserializer = avroBinarySchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
+          val deserializer =
+            avroBinarySchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
 
           val bytes = asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
@@ -111,7 +117,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
           // The looping nature of scalacheck causes to reuse the same wiremock configuration
           resetWireMock()
 
-          val deserializer = avroBinarySchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
+          val deserializer =
+            avroBinarySchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
           val bytes = asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
           givenSchema(schemaId, SchemaFor[Event].schema)
@@ -123,7 +130,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
         }
 
         "handle a format byte in the header" in forAll { (topic: String, schemaId: Int, event: Event) =>
-          val deserializer = avroBinarySchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = true)
+          val deserializer =
+            avroBinarySchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = true)
 
           val bytes = Array(0: Byte) ++ asAvroBinaryWithSchemaIdBytes(event, schemaId)
 
@@ -138,7 +146,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
     "deserializing json" when {
       "the writer schema is used" should {
         "read the schema from the registry" in forAll { (topic: String, schemaId: Int, event: Event) =>
-          val deserializer = avroJsonSchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
+          val deserializer =
+            avroJsonSchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
           val bytes = asAvroJsonWithSchemaIdBytes(event, schemaId)
 
           givenSchema(schemaId, SchemaFor[Event].schema)
@@ -152,7 +161,8 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
           // The looping nature of scalacheck causes to reuse the same wiremock configuration
           resetWireMock()
 
-          val deserializer = avroJsonSchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
+          val deserializer =
+            avroJsonSchemaIdDeserializer[Event](wireMockEndpoint, isKey = false, includesFormatByte = false)
           val bytes = asAvroJsonWithSchemaIdBytes(event, schemaId)
 
           givenSchema(schemaId, SchemaFor[Event].schema)
@@ -181,17 +191,18 @@ class Avro4s2SerializationSpec extends UnitSpec with WireMockFixture {
     )
   }
 
-  private def asAvroBinaryWithSchemaIdBytes[T: Encoder](t: T, schemaId: Int)(implicit schemaFor: SchemaFor[T]): Array[Byte] =
+  private def asAvroBinaryWithSchemaIdBytes[T: Encoder](t: T,
+                                                        schemaId: Int)(implicit schemaFor: SchemaFor[T]): Array[Byte] =
     asAvroWithSchemaIdBytes(t, schemaId, out => AvroOutputStream.binary[T].to(out).build(schemaFor.schema))
 
-  private def asAvroJsonWithSchemaIdBytes[T: SchemaFor: Encoder](t: T, schemaId: Int)(implicit schemaFor: SchemaFor[T]): Array[Byte] =
+  private def asAvroJsonWithSchemaIdBytes[T: SchemaFor: Encoder](t: T, schemaId: Int)(
+    implicit schemaFor: SchemaFor[T]
+  ): Array[Byte] =
     asAvroWithSchemaIdBytes(t, schemaId, out => AvroOutputStream.json[T].to(out).build(schemaFor.schema))
 
-  private def asAvroWithSchemaIdBytes[T](
-    t: T,
-    schemaId: Int,
-    mkAvroOut: OutputStream => AvroOutputStream[T]
-  ): Array[Byte] = {
+  private def asAvroWithSchemaIdBytes[T](t: T,
+                                         schemaId: Int,
+                                         mkAvroOut: OutputStream => AvroOutputStream[T]): Array[Byte] = {
     val bout = new ByteArrayOutputStream()
     val avroOut = mkAvroOut(bout)
     avroOut.write(t)

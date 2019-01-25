@@ -1,34 +1,36 @@
-Kafka serialization/deserialization building blocks
-===================================================
+# Kafka serialization/deserialization building blocks
+
 [![CircleCI Badge](https://circleci.com/gh/ovotech/kafka-serialization.svg?style=shield)](https://circleci.com/gh/ovotech/kafka-serialization)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2d814f22d4e4facae0f8a3eb1c841fd)](https://www.codacy.com/app/filippo-deluca/kafka-serialization?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ovotech/kafka-serialization&amp;utm_campaign=Badge_Grade)
 [![Download](https://api.bintray.com/packages/ovotech/maven/kafka-serialization/images/download.svg)](https://bintray.com/ovotech/maven/kafka-serialization/_latestVersion)
-
 
 The aim of this library is to provide the Lego&trade; bricks to build a serializer/deserializer for kafka messages. 
 
 The serializers/deserializers built by this library cannot be used in the Kafka configuration through properties, but 
 need to be passed through the Kafka Producer/Consumer constructors (It is feature IMHO).
 
-For the Avro serialization this library uses Avro4s while for JSON it supports Jsoniter-Scala, Json4s, Circe and Spray 
-out of the box. It is quite easy to add support for other libraries as well.
+For the Avro serialization this library uses Avro4s while for JSON it supports Json4s, Circe and Spray out of the box. 
+It is quite easy to add support for other libraries as well.
 
 ## Modules
+
 The library is composed by these modules:
 
- - kafka-serialization-core: provides the serialization primitives to build serializers and deserializers.
- - kafka-serialization-cats: provides cats typeclasses instances for serializers and deserializers.
- - kafka-serialization-json4s: provides serializer and deserializer based on Json4s
- - kafka-serialization-jsoniter-scala: provides serializer and deserializer based on Jsoniter Scala
- - kafka-serialization-spray: provides serializer and deserializer based on Spray Json
- - kafka-serialization-circe: provides serializer and deserializer based on Circe
- - kafka-serialization-avro: provides an improved schema-registry client based on Jersey 2.x that allow basic auth
- - kafka-serialization-avro4s: provides serializer and deserializer based on Avro4s
+- kafka-serialization-core: provides the serialization primitives to build serializers and deserializers.
+- kafka-serialization-cats: provides cats typeclasses instances for serializers and deserializers.
+- kafka-serialization-json4s: provides serializer and deserializer based on Json4s
+- kafka-serialization-jsoniter-scala: provides serializer and deserializer based on Jsoniter Scala
+- kafka-serialization-spray: provides serializer and deserializer based on Spray Json
+- kafka-serialization-circe: provides serializer and deserializer based on Circe
+- kafka-serialization-avro: provides an schema-registry client settings
+- kafka-serialization-avro4s: provides serializer and deserializer based on Avro4s 1.x
+- kafka-serialization-avro4s2: provides serializer and deserializer based on Avro4s 2.x
 
 The Avro4s serialization support the schema evolution through the schema registry. The consumer can provide its own schema
 and Avro will take care of the conversion.
 
 ## Getting Started
+
 The library is available in the Bintray OVO repository. Add this snippet to your build.sbt to use it.
 
 ```sbtshell
@@ -38,7 +40,7 @@ import sbt.Keys.
 resolvers += Resolver.bintrayRepo("ovotech", "maven")
 
 libraryDependencies ++= {
-  val kafkaSerializationV = "0.3.8" // see the Maven badge above for the latest version
+  val kafkaSerializationV = "0.1.23" // see the Maven badge above for the latest version
   Seq(
     "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
     "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support
@@ -52,6 +54,7 @@ libraryDependencies ++= {
 ```
 
 ## Circe example
+
 Circe is a JSON library for Scala that provides support for generic programming trough Shapeless. You can find more 
 information on the [Circe website](https://circe.github.io/circe).
 
@@ -90,6 +93,7 @@ val consumer = new KafkaConsumer(
 
 
 ## Jsoniter Scala example
+
 [Jsoniter Scala](https://github.com/plokhotnyuk/jsoniter-scala). is a library that generates codecs for case classes, 
 standard types and collections to get maximum performance of JSON parsing & serialization.
 
@@ -111,11 +115,11 @@ import scala.collection.JavaConverters._
 
 case class UserCreated(id: String, name: String, age: Int)
 
-implicit val userCreatedCodec: JsonCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig())
+implicit val userCreatedCodec: JsonValueCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig())
 
 val producer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
-  nullSerializer[Unit], 
+  nullSerializer[Unit],
   jsoniterScalaSerializer[UserCreated]()
 )
 
@@ -130,6 +134,7 @@ val consumer = new KafkaConsumer(
 
 
 ## Avro example
+
 Apache Avro is a remote procedure call and data serialization framework developed within Apache's Hadoop project. It uses 
 JSON for defining data types and protocols, and serializes data in a compact binary format.
 
@@ -137,7 +142,7 @@ Apache Avro provide some support to evolve your messages across multiple version
 older or newer consumers. It supports several encoding formats but two are the most used in Kafka: Binary and Json.
 
 The encoded data is always validated and parsed using a Schema (defined in JSON) and eventually evolved to the reader 
-Schema version. 
+Schema version.
 
 This library provided the support to Avro by using the [Avro4s](https://github.com/sksamuel/avro4s) libray. It uses macro
 and shapeless to allowing effortless serialization and deserialization. In addition to Avro4s it need a Confluent schema
@@ -234,6 +239,7 @@ val consumer = new KafkaConsumer(
 
 
 ## Format byte
+
 The Original Confluent Avro serializer/deserializer prefix the payload with a "magic" byte to identify that the message 
 has been written with the Avro serializer. 
 
@@ -302,9 +308,11 @@ all the demultiplexed `serialiazer` must be declared as `Deserializer[T]`.
 There are other support serializer and deserializer, you can discover them looking trough the code and the tests.
 
 ## Useful de-serializers
+
 In the core module there are pleanty of serializers and deserializers that handle generic cases.
 
 ### Optional deserializer
+
 To handle the case in which the data is null, you need to wrap the deserializer in the `optionalDeserializer`:
 
 ```scala
@@ -315,36 +323,39 @@ import com.ovoenergy.kafka.serialization.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
 
+import org.apache.kafka.common.serialization.Deserializer
+
 case class UserCreated(id: String, name: String, age: Int)
 
 val userCreatedDeserializer: Deserializer[Option[UserCreated]] = optionalDeserializer(circeJsonDeserializer[UserCreated])
 ```
 
 ## Cats instances
+
 The `cats` module provides the `Functor` typeclass instance for the `Deserializer` and `Contravariant` instance for the 
 `Serializer`. This allow to do:
 
 ```scala
-import cats.syntax.functor._
-import cats.syntax.contravariant._
+import cats.implicits._
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.cats._
-import org.apache.kafka.common.serialization.{Serializer, Deserializer, IntegerSerializer}
+import org.apache.kafka.common.serialization.{Serializer, Deserializer, IntegerSerializer, IntegerDeserializer}
 
-val intDeserializer: Deserializer[Int] = constDeserializer(5)
+val intDeserializer: Deserializer[Int] = (new IntegerDeserializer).asInstanceOf[Deserializer[Int]]
 val stringDeserializer: Deserializer[String] = intDeserializer.map(_.toString)
  
- 
-val intSerializer: Serializer[Int] = new IntegerSerializer
+val intSerializer: Serializer[Int] = (new IntegerSerializer).asInstanceOf[Serializer[Int]]
 val stringSerializer: Serializer[String] = intSerializer.contramap(_.toInt)
 ```
 
 ## Complaints and other Feedback
+
 Feedback of any kind is always appreciated.
 
 Issues and PR's are welcome as well.
 
 ## About this README
+
 The code samples in this README file are checked using [tut](https://github.com/tpolecat/tut).
 
 This means that the `README.md` file is generated from `doc/src/main/tut/README.md`. If you want to make any changes to the README, you should:
