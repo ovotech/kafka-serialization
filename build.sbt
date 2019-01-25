@@ -2,12 +2,13 @@ lazy val catsVersion = "1.0.1"
 lazy val circeVersion = "0.8.0"
 lazy val logbackVersion = "1.2.3"
 lazy val avro4sVersion = "1.8.3"
+lazy val avro4s2Version = "2.0.3"
 lazy val json4sVersion = "3.5.1"
 lazy val slf4jVersion = "1.7.22"
 
 lazy val `kafka-serialization` = project
   .in(file("."))
-  .aggregate(avro, avro4s, cats, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
+  .aggregate(avro, avro4s, avro4s2, cats, circe, core, json4s, `jsoniter-scala`, spray, testkit, doc)
   .settings(
     inThisBuild(
       List(
@@ -125,6 +126,18 @@ lazy val avro4s = project
   .dependsOn(core, avro, testkit % Test)
   .settings(
     name := "kafka-serialization-avro4s",
+    libraryDependencies ++= Seq(
+      "com.sksamuel.avro4s" %% "avro4s-macros" % avro4sVersion,
+      "com.sksamuel.avro4s" %% "avro4s-core" % avro4sVersion,
+      "com.sksamuel.avro4s" %% "avro4s-json" % avro4sVersion
+    )
+  )
+
+lazy val avro4s2 = project
+  .in(file("avro4s2"))
+  .dependsOn(core, avro, testkit % Test)
+  .settings(
+    name := "kafka-serialization-avro4s2",
     libraryDependencies ++= Seq(
       "com.sksamuel.avro4s" %% "avro4s-macros" % avro4sVersion,
       "com.sksamuel.avro4s" %% "avro4s-core" % avro4sVersion,
