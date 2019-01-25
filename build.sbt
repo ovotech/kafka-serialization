@@ -43,7 +43,6 @@ lazy val `kafka-serialization` = project
           )
         ),
         scalaVersion := "2.12.8",
-        crossScalaVersions += "2.11.12",
         resolvers ++= Seq(
           Resolver.mavenLocal,
           Resolver.typesafeRepo("releases"),
