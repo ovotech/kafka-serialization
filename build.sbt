@@ -139,9 +139,9 @@ lazy val avro4s2 = project
   .settings(
     name := "kafka-serialization-avro4s2",
     libraryDependencies ++= Seq(
-      "com.sksamuel.avro4s" %% "avro4s-macros" % avro4sVersion,
-      "com.sksamuel.avro4s" %% "avro4s-core" % avro4sVersion,
-      "com.sksamuel.avro4s" %% "avro4s-json" % avro4sVersion
+      "com.sksamuel.avro4s" %% "avro4s-macros" % avro4s2Version,
+      "com.sksamuel.avro4s" %% "avro4s-core" % avro4s2Version,
+      "com.sksamuel.avro4s" %% "avro4s-json" % avro4s2Version
     )
   )
 
