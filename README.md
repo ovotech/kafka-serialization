@@ -2,14 +2,14 @@
 
 [![CircleCI Badge](https://circleci.com/gh/ovotech/kafka-serialization.svg?style=shield)](https://circleci.com/gh/ovotech/kafka-serialization)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2d814f22d4e4facae0f8a3eb1c841fd)](https://www.codacy.com/app/filippo-deluca/kafka-serialization?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ovotech/kafka-serialization&amp;utm_campaign=Badge_Grade)
-[![Download](https://api.bintray.com/packages/ovotech/maven/kafka-serialization/images/download.svg)](https://bintray.com/ovotech/maven/kafka-serialization/_latestVersion)
+[![Download](https://api.bintray.com/packages/ovotech/maven/kafka-serialization-core/images/download.svg)](https://bintray.com/ovotech/maven/kafka-serialization-core/_latestVersion)
 
-The aim of this library is to provide the Lego&trade; bricks to build a serializer/deserializer for kafka messages. 
+The aim of this library is to provide the Lego&trade; bricks to build a serializer/deserializer for kafka messages.
 
-The serializers/deserializers built by this library cannot be used in the Kafka configuration through properties, but 
+The serializers/deserializers built by this library cannot be used in the Kafka configuration through properties, but
 need to be passed through the Kafka Producer/Consumer constructors (It is feature IMHO).
 
-For the Avro serialization this library uses Avro4s while for JSON it supports Json4s, Circe and Spray out of the box. 
+For the Avro serialization this library uses Avro4s while for JSON it supports Json4s, Circe and Spray out of the box.
 It is quite easy to add support for other libraries as well.
 
 ## Modules
@@ -55,7 +55,7 @@ libraryDependencies ++= {
 
 ## Circe example
 
-Circe is a JSON library for Scala that provides support for generic programming trough Shapeless. You can find more 
+Circe is a JSON library for Scala that provides support for generic programming trough Shapeless. You can find more
 information on the [Circe website](https://circe.github.io/circe).
 
 Simple serialization/deserialization example with Circe:
@@ -77,8 +77,8 @@ import scala.collection.JavaConverters._
 case class UserCreated(id: String, name: String, age: Int)
 
 val producer = new KafkaProducer(
-  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
-  nullSerializer[Unit], 
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullSerializer[Unit],
   circeJsonSerializer[UserCreated]
 )
 
@@ -94,7 +94,7 @@ val consumer = new KafkaConsumer(
 
 ## Jsoniter Scala example
 
-[Jsoniter Scala](https://github.com/plokhotnyuk/jsoniter-scala). is a library that generates codecs for case classes, 
+[Jsoniter Scala](https://github.com/plokhotnyuk/jsoniter-scala). is a library that generates codecs for case classes,
 standard types and collections to get maximum performance of JSON parsing & serialization.
 
 Here is an example of serialization/deserialization with Jsoniter Scala:
@@ -118,7 +118,7 @@ case class UserCreated(id: String, name: String, age: Int)
 implicit val userCreatedCodec: JsonValueCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig())
 
 val producer = new KafkaProducer(
-  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
   nullSerializer[Unit],
   jsoniterScalaSerializer[UserCreated]()
 )
@@ -135,18 +135,18 @@ val consumer = new KafkaConsumer(
 
 ## Avro example
 
-Apache Avro is a remote procedure call and data serialization framework developed within Apache's Hadoop project. It uses 
+Apache Avro is a remote procedure call and data serialization framework developed within Apache's Hadoop project. It uses
 JSON for defining data types and protocols, and serializes data in a compact binary format.
 
-Apache Avro provide some support to evolve your messages across multiple version without breaking compatibility with 
+Apache Avro provide some support to evolve your messages across multiple version without breaking compatibility with
 older or newer consumers. It supports several encoding formats but two are the most used in Kafka: Binary and Json.
 
-The encoded data is always validated and parsed using a Schema (defined in JSON) and eventually evolved to the reader 
+The encoded data is always validated and parsed using a Schema (defined in JSON) and eventually evolved to the reader
 Schema version.
 
 This library provided the support to Avro by using the [Avro4s](https://github.com/sksamuel/avro4s) libray. It uses macro
 and shapeless to allowing effortless serialization and deserialization. In addition to Avro4s it need a Confluent schema
-registry in place, It will provide a way to control the format of the messages produced in kafka. You can find more 
+registry in place, It will provide a way to control the format of the messages produced in kafka. You can find more
 information in the [Confluent Schema Registry Documentation ](http://docs.confluent.io/current/schema-registry/docs/).
 
 
@@ -171,8 +171,8 @@ case class UserCreated(id: String, name: String, age: Int)
 implicit val UserCreatedToRecord = ToRecord[UserCreated]
 
 val producer = new KafkaProducer(
-  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
-  nullSerializer[Unit], 
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullSerializer[Unit],
   avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = true)
 )
 
@@ -189,13 +189,13 @@ val consumer = new KafkaConsumer(
 
 
 
-This Avro serializer will try to register the schema every new message type it will serialize and will save the obtained 
+This Avro serializer will try to register the schema every new message type it will serialize and will save the obtained
 schema id in cache. The deserializer will contact the schema registry each time it will encounter a message with a never
-seen before schema id. 
+seen before schema id.
 
-The schema id will encoded in the first 4 bytes of the payload. The deserializer will extract the schema id from the 
-payload and fetch the schema from the schema registry. The deserializer is able to evolve the original message to the 
-consumer schema. The use case is when the consumer is only interested in a part of the original message (schema projection) 
+The schema id will encoded in the first 4 bytes of the payload. The deserializer will extract the schema id from the
+payload and fetch the schema from the schema registry. The deserializer is able to evolve the original message to the
+consumer schema. The use case is when the consumer is only interested in a part of the original message (schema projection)
 or when the original message is in a older or newer format of the cosumer schema (schema evolution).
 
 An example of the consumer schema:
@@ -213,7 +213,7 @@ import scala.collection.JavaConverters._
 
 val schemaRegistryEndpoint = "http://localhost:8081"
 
-/* Assuming the original message has been serialized using the 
+/* Assuming the original message has been serialized using the
  * previously defined UserCreated class. We are going to project
  * it ignoring the value of the age
  */
@@ -223,7 +223,7 @@ case class UserCreated(id: String, name: String)
 implicit val UserCreatedFromRecord = FromRecord[UserCreated]
 
 
-/* This type class is need by the avroBinarySchemaIdDeserializer 
+/* This type class is need by the avroBinarySchemaIdDeserializer
  * to obtain the consumer schema
  */
 implicit val UserCreatedSchemaFor = SchemaFor[UserCreated]
@@ -240,10 +240,10 @@ val consumer = new KafkaConsumer(
 
 ## Format byte
 
-The Original Confluent Avro serializer/deserializer prefix the payload with a "magic" byte to identify that the message 
-has been written with the Avro serializer. 
+The Original Confluent Avro serializer/deserializer prefix the payload with a "magic" byte to identify that the message
+has been written with the Avro serializer.
 
-Similarly this library support the same mechanism by mean of a couple of function. It is even able to multiplex and 
+Similarly this library support the same mechanism by mean of a couple of function. It is even able to multiplex and
 demultiplex different serializers/deserializers based on that format byte. At the moment the supported formats are
   - JSON
   - Avro Binary with schema ID
@@ -269,15 +269,15 @@ case class UserCreated(id: String, name: String, email: String) extends Event
 
 /* This producer will produce messages in Avro binary format */
 val avroBinaryProducer = new KafkaProducer(
-  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
-  nullSerializer[Unit],   
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullSerializer[Unit],
   formatSerializer(Format.AvroBinarySchemaId, avroBinarySchemaIdSerializer[UserCreated](schemaRegistryEndpoint, isKey = false, includesFormatByte = false))
 )
 
 /* This producer will produce messages in Json format */
 val circeProducer = new KafkaProducer(
-  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
-  nullSerializer[Unit],   
+  Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava,
+  nullSerializer[Unit],
   formatSerializer(Format.Json, circeJsonSerializer[UserCreated])
 )
 
@@ -332,7 +332,7 @@ val userCreatedDeserializer: Deserializer[Option[UserCreated]] = optionalDeseria
 
 ## Cats instances
 
-The `cats` module provides the `Functor` typeclass instance for the `Deserializer` and `Contravariant` instance for the 
+The `cats` module provides the `Functor` typeclass instance for the `Deserializer` and `Contravariant` instance for the
 `Serializer`. This allow to do:
 
 ```scala
@@ -343,7 +343,7 @@ import org.apache.kafka.common.serialization.{Serializer, Deserializer, IntegerS
 
 val intDeserializer: Deserializer[Int] = (new IntegerDeserializer).asInstanceOf[Deserializer[Int]]
 val stringDeserializer: Deserializer[String] = intDeserializer.map(_.toString)
- 
+
 val intSerializer: Serializer[Int] = (new IntegerSerializer).asInstanceOf[Serializer[Int]]
 val stringSerializer: Serializer[String] = intSerializer.contramap(_.toInt)
 ```
