@@ -12,7 +12,7 @@ lazy val confluentPlatformVersion = "5.1.0"
 lazy val scalaTestVersion = "3.0.5"
 lazy val scalaCheckVersion = "1.14.0"
 lazy val scalaMockVersion = "3.6.0"
-lazy val wiremockVersion = "2.20.0"
+lazy val wiremockVersion = "2.23.2"
 lazy val scalaArmVersion = "2.0"
 
 lazy val `kafka-serialization` = project
