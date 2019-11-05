@@ -46,7 +46,7 @@ private[avro4s2] trait Avro4s2Serialization {
     * @param isKey true if this is a deserializer for keys, false if it is for values
     * @param includesFormatByte whether the messages are also prepended with a magic byte to specify the Avro format
     */
-  def avroBinarySchemaIdDeserializer[T: Decoder](schemaRegistryEndpoint: String,
+  def avroBinarySchemaIdDeserializer[T : Decoder : SchemaFor](schemaRegistryEndpoint: String,
                                                  isKey: Boolean,
                                                  includesFormatByte: Boolean): KafkaDeserializer[T] =
     avroBinarySchemaIdDeserializer(SchemaRegistryClientSettings(schemaRegistryEndpoint), isKey, includesFormatByte)
@@ -57,7 +57,7 @@ private[avro4s2] trait Avro4s2Serialization {
     * @param isKey true if this is a deserializer for keys, false if it is for values
     * @param includesFormatByte whether the messages are also prepended with a magic byte to specify the Avro format
     */
-  def avroBinarySchemaIdDeserializer[T: Decoder](schemaRegistryClientSettings: SchemaRegistryClientSettings,
+  def avroBinarySchemaIdDeserializer[T : Decoder : SchemaFor](schemaRegistryClientSettings: SchemaRegistryClientSettings,
                                                  isKey: Boolean,
                                                  includesFormatByte: Boolean): KafkaDeserializer[T] = {
     val schemaRegistryClient = initSchemaRegistryClient(schemaRegistryClientSettings)
@@ -76,7 +76,7 @@ private[avro4s2] trait Avro4s2Serialization {
     isKey: Boolean,
     includesFormatByte: Boolean,
     props: Map[String, String] = Map()
-  )(implicit decoder: Decoder[T]): KafkaDeserializer[T] = {
+  )(implicit decoder: Decoder[T], schemaFor: SchemaFor[T]): KafkaDeserializer[T] = {
 
     val d: KafkaAvroDeserializer = new KafkaAvroDeserializer(schemaRegistryClient)
 
@@ -93,14 +93,7 @@ private[avro4s2] trait Avro4s2Serialization {
         else Array(0: Byte) ++ data // prepend the magic byte before delegating to the KafkaAvroDeserializer
       }
 
-      val writerSchema = {
-        val buffer = ByteBuffer.wrap(bytes)
-        buffer.get() // Skip the magic byte
-        val schemaId = buffer.getInt
-        schemaRegistryClient.getById(schemaId)
-      }
-
-      decoder.decode(d.deserialize(topic, bytes), writerSchema)
+      decoder.decode(d.deserialize(topic, bytes), schemaFor.schema)
     })
   }
 
