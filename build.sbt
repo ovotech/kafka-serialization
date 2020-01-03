@@ -1,16 +1,16 @@
-lazy val catsVersion = "1.6.1"
+lazy val catsVersion = "2.1.0"
 lazy val circeVersion = "0.11.1"
 lazy val logbackVersion = "1.2.3"
 lazy val avro4sVersion = "1.9.0"
 lazy val avro4s2Version = "2.0.4"
 lazy val json4sVersion = "3.6.7"
-lazy val slf4jVersion = "1.7.25"
+lazy val slf4jVersion = "1.7.30"
 lazy val sprayJsonVersion = "1.3.5"
 lazy val kafkaClientVersion = "2.3.0"
-lazy val jsoninterScalaVersion = "0.28.1"
-lazy val confluentPlatformVersion = "5.1.3"
+lazy val jsoninterScalaVersion = "1.0.0"
+lazy val confluentPlatformVersion = "5.3.2"
 lazy val scalaTestVersion = "3.0.8"
-lazy val scalaCheckVersion = "1.14.0"
+lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
 lazy val wiremockVersion = "2.24.0"
 lazy val scalaArmVersion = "2.0"
@@ -158,7 +158,10 @@ lazy val `jsoniter-scala` = project
   .dependsOn(core, testkit % Test)
   .settings(
     name := "kafka-serialization-jsoniter-scala",
-    libraryDependencies ++= Seq("com.github.plokhotnyuk.jsoniter-scala" %% "macros" % jsoninterScalaVersion)
+    libraryDependencies ++= Seq(
+      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % jsoninterScalaVersion,
+      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % jsoninterScalaVersion % Provided
+    )
   )
 
 lazy val circe = project

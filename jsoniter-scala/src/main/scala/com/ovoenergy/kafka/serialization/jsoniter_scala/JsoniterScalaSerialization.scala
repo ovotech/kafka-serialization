@@ -22,10 +22,10 @@ import org.apache.kafka.common.serialization.{Deserializer => KafkaDeserializer,
 
 private[jsoniter_scala] trait JsoniterScalaSerialization {
 
-  def jsoniterScalaSerializer[T: JsonValueCodec](config: WriterConfig = WriterConfig()): KafkaSerializer[T] =
+  def jsoniterScalaSerializer[T: JsonValueCodec](config: WriterConfig = WriterConfig): KafkaSerializer[T] =
     serializer((_, data) => writeToArray[T](data, config))
 
-  def jsoniterScalaDeserializer[T: JsonValueCodec](config: ReaderConfig = ReaderConfig()): KafkaDeserializer[T] =
+  def jsoniterScalaDeserializer[T: JsonValueCodec](config: ReaderConfig = ReaderConfig): KafkaDeserializer[T] =
     deserializer((_, data) => readFromArray(data, config))
 
 }
