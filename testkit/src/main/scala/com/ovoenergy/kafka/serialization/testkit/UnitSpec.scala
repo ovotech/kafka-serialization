@@ -19,8 +19,9 @@ package com.ovoenergy.kafka.serialization.testkit
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary._
 import org.scalatest.concurrent.{ScalaFutures, ScaledTimeSpans}
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 object UnitSpec {
 
@@ -38,7 +39,7 @@ object UnitSpec {
 
 }
 
-abstract class UnitSpec extends WordSpec with Matchers with PropertyChecks with ScalaFutures with ScaledTimeSpans {
+abstract class UnitSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks with ScalaFutures with ScaledTimeSpans {
 
   override lazy val spanScaleFactor: Double =
     sys.env.get("TEST_TIME_FACTOR").map(_.toDouble).getOrElse(super.spanScaleFactor)
