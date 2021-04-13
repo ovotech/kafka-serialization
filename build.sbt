@@ -1,3 +1,7 @@
+import sbtrelease.ExtraReleaseCommands
+import sbtrelease.ReleaseStateTransformations._
+import sbtrelease.tagsonly.TagsOnly._
+
 lazy val catsVersion = "2.1.0"
 lazy val circeVersion = "0.11.1"
 lazy val logbackVersion = "1.2.3"
@@ -14,6 +18,27 @@ lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
 lazy val wiremockVersion = "2.24.0"
 lazy val scalaArmVersion = "2.0"
+
+lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
+
+lazy val publishSettings = Seq(
+  publishTo := Some(publicArtifactory),
+  credentials += {
+    for {
+      usr <- sys.env.get("ARTIFACTORY_USER")
+      password <- sys.env.get("ARTIFACTORY_PASS")
+    } yield Credentials("Artifactory Realm", "kaluza.jfrog.io", usr, password)
+  }.getOrElse(Credentials(Path.userHome / ".ivy2" / ".credentials")),
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
+    setVersionFromTags(releaseTagPrefix.value),
+    runClean,
+    tagRelease,
+    publishArtifacts,
+    pushTagsOnly
+  )
+)
 
 lazy val `kafka-serialization` = project
   .in(file("."))
@@ -46,28 +71,14 @@ lazy val `kafka-serialization` = project
         resolvers ++= Seq(
           Resolver.mavenLocal,
           Resolver.typesafeRepo("releases"),
-          Resolver.bintrayRepo("tpolecat", "maven"),
           "confluent-release" at "http://packages.confluent.io/maven/"
-        ),
-        bintrayOrganization := Some("ovotech"),
-        bintrayRepository := "maven",
-        bintrayPackageLabels := Seq(
-          "apache-kafka",
-          "serialization",
-          "json",
-          "avro",
-          "circe",
-          "spray-json",
-          "json4s",
-          "avro4s"
-        ),
-        releaseEarlyWith := BintrayPublisher,
-        releaseEarlyNoGpg := true,
-        releaseEarlyEnableSyncToMaven := false
+        )
       )
     )
   )
   .settings(name := "kafka-serialization", publishArtifact := false, publish := {})
+  .settings(publishSettings)
+
 
 lazy val doc = project
   .in(file("doc"))
