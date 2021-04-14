@@ -79,7 +79,6 @@ lazy val `kafka-serialization` = project
   .settings(name := "kafka-serialization", publishArtifact := false, publish := {})
   .settings(publishSettings)
 
-
 lazy val doc = project
   .in(file("doc"))
   .enablePlugins(TutPlugin)
@@ -115,7 +114,7 @@ lazy val testkit = project
       "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
       "ch.qos.logback" % "logback-core" % logbackVersion,
-      "ch.qos.logback" % "logback-classic" % logbackVersion,
+      "ch.qos.logback" % "logback-classic" % logbackVersion
     )
   )
   .settings(publishSettings)
@@ -128,7 +127,7 @@ lazy val json4s = project
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.json4s" %% "json4s-core" % json4sVersion,
-      "org.json4s" %% "json4s-native" % json4sVersion,
+      "org.json4s" %% "json4s-native" % json4sVersion
     )
   )
   .settings(publishSettings)
@@ -190,7 +189,7 @@ lazy val circe = project
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion % Test,
+      "io.circe" %% "circe-generic" % circeVersion % Test
     )
   )
   .settings(publishSettings)
@@ -211,7 +210,7 @@ lazy val core = project
     name := "kafka-serialization-core",
     libraryDependencies ++= Seq(
       "org.apache.kafka" % "kafka-clients" % kafkaClientVersion exclude ("org.slf4j", "slf4j-log4j12"),
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion
     )
   )
   .settings(publishSettings)
