@@ -100,6 +100,7 @@ lazy val doc = project
     tutTargetDirectory := (baseDirectory.value).getParentFile,
     libraryDependencies ++= Seq("io.circe" %% "circe-generic" % circeVersion)
   )
+  .settings(publishSettings)
 
 lazy val testkit = project
   .in(file("testkit"))
@@ -117,6 +118,7 @@ lazy val testkit = project
       "ch.qos.logback" % "logback-classic" % logbackVersion,
     )
   )
+  .settings(publishSettings)
 
 lazy val json4s = project
   .in(file("json4s"))
@@ -129,6 +131,7 @@ lazy val json4s = project
       "org.json4s" %% "json4s-native" % json4sVersion,
     )
   )
+  .settings(publishSettings)
 
 lazy val avro = project
   .in(file("avro"))
@@ -139,6 +142,7 @@ lazy val avro = project
       "io.confluent" % "kafka-avro-serializer" % confluentPlatformVersion exclude ("org.slf4j", "slf4j-log4j12")
     )
   )
+  .settings(publishSettings)
 
 lazy val avro4s = project
   .in(file("avro4s"))
@@ -151,6 +155,7 @@ lazy val avro4s = project
       "com.sksamuel.avro4s" %% "avro4s-json" % avro4sVersion
     )
   )
+  .settings(publishSettings)
 
 lazy val avro4s2 = project
   .in(file("avro4s2"))
@@ -163,6 +168,7 @@ lazy val avro4s2 = project
       "com.sksamuel.avro4s" %% "avro4s-json" % avro4s2Version
     )
   )
+  .settings(publishSettings)
 
 lazy val `jsoniter-scala` = project
   .in(file("jsoniter-scala"))
@@ -174,6 +180,7 @@ lazy val `jsoniter-scala` = project
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % jsoninterScalaVersion % Provided
     )
   )
+  .settings(publishSettings)
 
 lazy val circe = project
   .in(file("circe"))
@@ -186,6 +193,7 @@ lazy val circe = project
       "io.circe" %% "circe-generic" % circeVersion % Test,
     )
   )
+  .settings(publishSettings)
 
 lazy val spray = project
   .in(file("spray"))
@@ -194,6 +202,7 @@ lazy val spray = project
     name := "kafka-serialization-spray",
     libraryDependencies ++= Seq("io.spray" %% "spray-json" % sprayJsonVersion)
   )
+  .settings(publishSettings)
 
 lazy val core = project
   .in(file("core"))
@@ -205,6 +214,7 @@ lazy val core = project
       "org.slf4j" % "slf4j-api" % slf4jVersion,
     )
   )
+  .settings(publishSettings)
 
 lazy val cats = project
   .in(file("cats"))
@@ -213,3 +223,4 @@ lazy val cats = project
     name := "kafka-serialization-cats",
     libraryDependencies ++= Seq("org.typelevel" %% "cats-core" % catsVersion)
   )
+  .settings(publishSettings)
