@@ -114,7 +114,7 @@ jobs:
 
       - run:
           name: Release
-          command: sbt releaseEarly
+          command: sbt +publish
 
 workflows:
   version: 2
@@ -125,6 +125,7 @@ workflows:
           requires:
           - build
       - publish:
+          context: comms-internal-build
           requires:
             - build
             - unit_test
