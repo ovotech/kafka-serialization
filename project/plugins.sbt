@@ -3,7 +3,7 @@ resolvers += Resolver.bintrayRepo("tpolecat", "maven")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
 addSbtPlugin("de.heikoseeberger" % "sbt-header" % "5.3.1")
 addSbtPlugin("com.geirsson" % "sbt-scalafmt" % "1.5.1")
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.11")
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")
 addSbtPlugin("fr.qux" % "sbt-release-tags-only" % "0.5.0")
 
 // TO mute sbt-git
