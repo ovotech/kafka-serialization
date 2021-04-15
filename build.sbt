@@ -1,4 +1,8 @@
-lazy val catsVersion = "2.1.1"
+import sbtrelease.ExtraReleaseCommands
+import sbtrelease.ReleaseStateTransformations._
+import sbtrelease.tagsonly.TagsOnly._
+
+lazy val catsVersion = "2.1.0"
 lazy val circeVersion = "0.11.1"
 lazy val logbackVersion = "1.2.3"
 lazy val avro4sVersion = "1.9.0"
@@ -14,6 +18,27 @@ lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
 lazy val wiremockVersion = "2.24.0"
 lazy val scalaArmVersion = "2.0"
+
+lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
+
+lazy val publishSettings = Seq(
+  publishTo := Some(publicArtifactory),
+  credentials += {
+    for {
+      usr <- sys.env.get("ARTIFACTORY_USER")
+      password <- sys.env.get("ARTIFACTORY_PASS")
+    } yield Credentials("Artifactory Realm", "kaluza.jfrog.io", usr, password)
+  }.getOrElse(Credentials(Path.userHome / ".ivy2" / ".credentials")),
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
+    setVersionFromTags(releaseTagPrefix.value),
+    runClean,
+    tagRelease,
+    publishArtifacts,
+    pushTagsOnly
+  )
+)
 
 lazy val `kafka-serialization` = project
   .in(file("."))
@@ -46,28 +71,13 @@ lazy val `kafka-serialization` = project
         resolvers ++= Seq(
           Resolver.mavenLocal,
           Resolver.typesafeRepo("releases"),
-          Resolver.bintrayRepo("tpolecat", "maven"),
           "confluent-release" at "http://packages.confluent.io/maven/"
-        ),
-        bintrayOrganization := Some("ovotech"),
-        bintrayRepository := "maven",
-        bintrayPackageLabels := Seq(
-          "apache-kafka",
-          "serialization",
-          "json",
-          "avro",
-          "circe",
-          "spray-json",
-          "json4s",
-          "avro4s"
-        ),
-        releaseEarlyWith := BintrayPublisher,
-        releaseEarlyNoGpg := true,
-        releaseEarlyEnableSyncToMaven := false
+        )
       )
     )
   )
   .settings(name := "kafka-serialization", publishArtifact := false, publish := {})
+  .settings(publishSettings)
 
 lazy val doc = project
   .in(file("doc"))
@@ -89,6 +99,7 @@ lazy val doc = project
     tutTargetDirectory := (baseDirectory.value).getParentFile,
     libraryDependencies ++= Seq("io.circe" %% "circe-generic" % circeVersion)
   )
+  .settings(publishSettings)
 
 lazy val testkit = project
   .in(file("testkit"))
@@ -103,9 +114,10 @@ lazy val testkit = project
       "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
       "ch.qos.logback" % "logback-core" % logbackVersion,
-      "ch.qos.logback" % "logback-classic" % logbackVersion,
+      "ch.qos.logback" % "logback-classic" % logbackVersion
     )
   )
+  .settings(publishSettings)
 
 lazy val json4s = project
   .in(file("json4s"))
@@ -115,9 +127,10 @@ lazy val json4s = project
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.json4s" %% "json4s-core" % json4sVersion,
-      "org.json4s" %% "json4s-native" % json4sVersion,
+      "org.json4s" %% "json4s-native" % json4sVersion
     )
   )
+  .settings(publishSettings)
 
 lazy val avro = project
   .in(file("avro"))
@@ -128,6 +141,7 @@ lazy val avro = project
       "io.confluent" % "kafka-avro-serializer" % confluentPlatformVersion exclude ("org.slf4j", "slf4j-log4j12")
     )
   )
+  .settings(publishSettings)
 
 lazy val avro4s = project
   .in(file("avro4s"))
@@ -140,6 +154,7 @@ lazy val avro4s = project
       "com.sksamuel.avro4s" %% "avro4s-json" % avro4sVersion
     )
   )
+  .settings(publishSettings)
 
 lazy val avro4s2 = project
   .in(file("avro4s2"))
@@ -152,6 +167,7 @@ lazy val avro4s2 = project
       "com.sksamuel.avro4s" %% "avro4s-json" % avro4s2Version
     )
   )
+  .settings(publishSettings)
 
 lazy val `jsoniter-scala` = project
   .in(file("jsoniter-scala"))
@@ -163,6 +179,7 @@ lazy val `jsoniter-scala` = project
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % jsoninterScalaVersion % Provided
     )
   )
+  .settings(publishSettings)
 
 lazy val circe = project
   .in(file("circe"))
@@ -172,9 +189,10 @@ lazy val circe = project
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion,
-      "io.circe" %% "circe-generic" % circeVersion % Test,
+      "io.circe" %% "circe-generic" % circeVersion % Test
     )
   )
+  .settings(publishSettings)
 
 lazy val spray = project
   .in(file("spray"))
@@ -183,6 +201,7 @@ lazy val spray = project
     name := "kafka-serialization-spray",
     libraryDependencies ++= Seq("io.spray" %% "spray-json" % sprayJsonVersion)
   )
+  .settings(publishSettings)
 
 lazy val core = project
   .in(file("core"))
@@ -191,9 +210,10 @@ lazy val core = project
     name := "kafka-serialization-core",
     libraryDependencies ++= Seq(
       "org.apache.kafka" % "kafka-clients" % kafkaClientVersion exclude ("org.slf4j", "slf4j-log4j12"),
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-api" % slf4jVersion
     )
   )
+  .settings(publishSettings)
 
 lazy val cats = project
   .in(file("cats"))
@@ -202,3 +222,4 @@ lazy val cats = project
     name := "kafka-serialization-cats",
     libraryDependencies ++= Seq("org.typelevel" %% "cats-core" % catsVersion)
   )
+  .settings(publishSettings)
