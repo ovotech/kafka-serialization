@@ -2,7 +2,7 @@ import sbtrelease.ExtraReleaseCommands
 import sbtrelease.ReleaseStateTransformations._
 import sbtrelease.tagsonly.TagsOnly._
 
-lazy val catsVersion = "2.1.0"
+lazy val catsVersion = "2.1.1"
 lazy val circeVersion = "0.11.1"
 lazy val logbackVersion = "1.2.3"
 lazy val avro4sVersion = "1.9.0"
