@@ -93,7 +93,7 @@ jobs:
       - store_artifacts:
           path: target/gc.log
 
-  publish:
+  tag:
 
     <<: *defaults
 
@@ -112,6 +112,21 @@ jobs:
           name: Tag Release
           command: build/tag.sh
 
+  publish:
+
+    <<: *defaults
+
+    steps:
+
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - *restore_dependencies_cache
+
+      - *configure_git_credetials
+
       - run:
           name: Release
           command: sbt +publish
@@ -123,13 +138,15 @@ workflows:
       - build
       - unit_test:
           requires:
-          - build
-      - publish:
-          context: comms-internal-build
-          requires:
             - build
+      - tag:
+          requires:
             - unit_test
           filters:
             branches:
               only:
                 - master
+      - publish:
+          context: comms-internal-build
+          requires:
+            - tag
