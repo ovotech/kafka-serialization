@@ -129,7 +129,7 @@ jobs:
 
       - run:
           name: Release
-          command: sbt +publish
+          command: sbt publish
 
 workflows:
   version: 2
