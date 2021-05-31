@@ -37,7 +37,7 @@ The library is available in the Bintray OVO repository. Add this snippet to your
 import sbt._
 import sbt.Keys.
 
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+resolvers += "JFrog ovoenergy" at "https://kaluza.jfrog.io/artifactory/maven"
 
 libraryDependencies ++= {
   val kafkaSerializationV = "0.1.23" // see the Maven badge above for the latest version
