@@ -2,7 +2,7 @@
 
 [![CircleCI Badge](https://circleci.com/gh/ovotech/kafka-serialization.svg?style=shield)](https://circleci.com/gh/ovotech/kafka-serialization)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2d814f22d4e4facae0f8a3eb1c841fd)](https://www.codacy.com/app/filippo-deluca/kafka-serialization?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ovotech/kafka-serialization&amp;utm_campaign=Badge_Grade)
-[![Download](https://api.bintray.com/packages/ovotech/maven/kafka-serialization/images/download.svg)](https://bintray.com/ovotech/maven/kafka-serialization/_latestVersion)
+[Download](https://kaluza.jfrog.io/artifactory/maven/com/ovoenergy/kafka-serialization-core_2.12/[RELEASE]/kafka-serialization-core_2.12-[RELEASE].jar)
 
 The aim of this library is to provide the Lego&trade; bricks to build a serializer/deserializer for kafka messages. 
 
@@ -31,16 +31,18 @@ and Avro will take care of the conversion.
 
 ## Getting Started
 
-The library is available in the Bintray OVO repository. Add this snippet to your build.sbt to use it.
+ - The library is available in the Kaluza artifactory repository.
+ - See [here](https://kaluza.jfrog.io/artifactory/maven/com/ovoenergy/kafka-serialization-core_2.12/) for the latest version.
+ - Add this snippet to your build.sbt to use it:
 
 ```sbtshell
 import sbt._
 import sbt.Keys.
 
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+resolvers += "Artifactory" at "https://kaluza.jfrog.io/artifactory/maven"
 
 libraryDependencies ++= {
-  val kafkaSerializationV = "0.1.23" // see the Maven badge above for the latest version
+  val kafkaSerializationV = "0.5.25"
   Seq(
     "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
     "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support
@@ -60,7 +62,7 @@ information on the [Circe website](https://circe.github.io/circe).
 
 Simple serialization/deserialization example with Circe:
 
-```tut:silent
+```scala mdoc:silent
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.circe._
 
@@ -89,7 +91,7 @@ val consumer = new KafkaConsumer(
 )
 ```
 
-```tut:invisible
+```scala mdoc:invisible
 producer.close()
 consumer.close()
 ```
@@ -101,7 +103,7 @@ standard types and collections to get maximum performance of JSON parsing & seri
 
 Here is an example of serialization/deserialization with Jsoniter Scala:
 
-```tut:silent
+```scala mdoc:silent:reset
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.jsoniter_scala._
 
@@ -117,7 +119,7 @@ import scala.collection.JavaConverters._
 
 case class UserCreated(id: String, name: String, age: Int)
 
-implicit val userCreatedCodec: JsonValueCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig())
+implicit val userCreatedCodec: JsonValueCodec[UserCreated] = JsonCodecMaker.make[UserCreated](CodecMakerConfig)
 
 val producer = new KafkaProducer(
   Map[String, AnyRef](BOOTSTRAP_SERVERS_CONFIG->"localhost:9092").asJava, 
@@ -132,7 +134,7 @@ val consumer = new KafkaConsumer(
 )
 ```
 
-```tut:invisible
+```scala mdoc:invisible
 producer.close()
 consumer.close()
 ```
@@ -155,7 +157,7 @@ information in the [Confluent Schema Registry Documentation ](http://docs.conflu
 
 
 An example with Avro4s binary and Schema Registry:
-```tut:silent
+```scala mdoc:silent:reset
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.avro4s._
 
@@ -190,7 +192,7 @@ val consumer = new KafkaConsumer(
 )
 ```
 
-```tut:invisible
+```scala mdoc:invisible
 producer.close()
 consumer.close()
 ```
@@ -205,7 +207,7 @@ consumer schema. The use case is when the consumer is only interested in a part 
 or when the original message is in a older or newer format of the cosumer schema (schema evolution).
 
 An example of the consumer schema:
-```tut:silent
+```scala mdoc:silent:reset
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.avro4s._
 
@@ -241,7 +243,7 @@ val consumer = new KafkaConsumer(
 )
 ```
 
-```tut:invisible
+```scala mdoc:invisible
 consumer.close()
 ```
 
@@ -257,7 +259,7 @@ demultiplex different serializers/deserializers based on that format byte. At th
   - Avro JSON with schema ID
 
 let's see this mechanism in action:
-```tut:silent
+```scala mdoc:silent:reset
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.avro4s._
 import com.ovoenergy.kafka.serialization.circe._
@@ -269,10 +271,13 @@ import io.circe.syntax._
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.CommonClientConfigs._
+import scala.collection.JavaConverters._
 
 
 sealed trait Event
 case class UserCreated(id: String, name: String, email: String) extends Event
+
+val schemaRegistryEndpoint = "http://localhost:8081"
 
 /* This producer will produce messages in Avro binary format */
 val avroBinaryProducer = new KafkaProducer(
@@ -306,7 +311,7 @@ val avroBinaryConsumer = new KafkaConsumer(
 )
 ```
 
-```tut:invisible
+```scala mdoc:invisible
 avroBinaryProducer.close()
 circeProducer.close()
 consumer.close()
@@ -326,7 +331,7 @@ In the core module there are pleanty of serializers and deserializers that handl
 
 To handle the case in which the data is null, you need to wrap the deserializer in the `optionalDeserializer`:
 
-```tut:silent
+```scala mdoc:silent:reset
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.circe._
 
@@ -346,7 +351,7 @@ val userCreatedDeserializer: Deserializer[Option[UserCreated]] = optionalDeseria
 The `cats` module provides the `Functor` typeclass instance for the `Deserializer` and `Contravariant` instance for the 
 `Serializer`. This allow to do:
 
-```tut:silent
+```scala mdoc:silent
 import cats.implicits._
 import com.ovoenergy.kafka.serialization.core._
 import com.ovoenergy.kafka.serialization.cats._
@@ -367,10 +372,10 @@ Issues and PR's are welcome as well.
 
 ## About this README
 
-The code samples in this README file are checked using [tut](https://github.com/tpolecat/tut).
+The code samples in this README file are checked using [mdoc](https://github.com/scalameta/mdoc).
 
-This means that the `README.md` file is generated from `doc/src/main/tut/README.md`. If you want to make any changes to the README, you should:
+This means that the `README.md` file is generated from `docs/src/README.md`. If you want to make any changes to the README, you should:
 
-1. Edit `doc/src/main/tut/README.md`
-2. Run `sbt tut` to regenerate `./README.md`
+1. Edit `docs/src/README.md`
+2. Run `sbt mdoc` to regenerate `./README.md`
 3. Commit both files to git
