@@ -71,7 +71,7 @@ lazy val `kafka-serialization` = project
         resolvers ++= Seq(
           Resolver.mavenLocal,
           Resolver.typesafeRepo("releases"),
-          "confluent-release" at "http://packages.confluent.io/maven/"
+          "confluent-release" at "https://packages.confluent.io/maven/"
         )
       )
     )
@@ -81,23 +81,20 @@ lazy val `kafka-serialization` = project
 
 lazy val doc = project
   .in(file("doc"))
-  .enablePlugins(TutPlugin)
-  .dependsOn(
-    avro % Tut,
-    avro4s % Tut,
-    cats % Tut,
-    circe % Tut,
-    core % Tut,
-    json4s % Tut,
-    `jsoniter-scala` % Tut,
-    spray % Tut
-  )
+  .enablePlugins(MdocPlugin)
+  .dependsOn(avro, avro4s, cats, circe, core, json4s, `jsoniter-scala`, spray)
   .settings(
     name := "kafka-serialization-doc",
     publishArtifact := false,
     publish := {},
-    tutTargetDirectory := (baseDirectory.value).getParentFile,
-    libraryDependencies ++= Seq("io.circe" %% "circe-generic" % circeVersion)
+    mdocIn := baseDirectory.value / "src",
+    mdocOut := (baseDirectory.value).getParentFile,
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-generic" % circeVersion,
+      "org.apache.kafka" % "kafka-clients" % kafkaClientVersion exclude ("org.slf4j", "slf4j-log4j12"),
+      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % jsoninterScalaVersion,
+      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % jsoninterScalaVersion % Provided
+    )
   )
   .settings(publishSettings)
 
