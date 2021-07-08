@@ -31,16 +31,18 @@ and Avro will take care of the conversion.
 
 ## Getting Started
 
-The library is available in the Bintray OVO repository. Add this snippet to your build.sbt to use it.
+ - The library is available in the Kaluza artifactory repository.
+ - See [here](https://kaluza.jfrog.io/artifactory/maven/com/ovoenergy/kafka-serialization-core_2.12/) for the latest version.
+ - Add this snippet to your build.sbt to use it:
 
 ```sbtshell
 import sbt._
 import sbt.Keys.
 
-resolvers += Resolver.bintrayRepo("ovotech", "maven")
+resolvers += "Artifactory" at "https://kaluza.jfrog.io/artifactory/maven"
 
 libraryDependencies ++= {
-  val kafkaSerializationV = "0.1.23" // see the Maven badge above for the latest version
+  val kafkaSerializationV = "0.5.25"
   Seq(
     "com.ovoenergy" %% "kafka-serialization-core" % kafkaSerializationV,
     "com.ovoenergy" %% "kafka-serialization-circe" % kafkaSerializationV, // To provide Circe JSON support
