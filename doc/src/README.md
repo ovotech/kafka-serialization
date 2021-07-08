@@ -2,7 +2,7 @@
 
 [![CircleCI Badge](https://circleci.com/gh/ovotech/kafka-serialization.svg?style=shield)](https://circleci.com/gh/ovotech/kafka-serialization)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2d814f22d4e4facae0f8a3eb1c841fd)](https://www.codacy.com/app/filippo-deluca/kafka-serialization?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ovotech/kafka-serialization&amp;utm_campaign=Badge_Grade)
-[![Download](https://api.bintray.com/packages/ovotech/maven/kafka-serialization/images/download.svg)](https://bintray.com/ovotech/maven/kafka-serialization/_latestVersion)
+[Download](https://kaluza.jfrog.io/artifactory/maven/com/ovoenergy/kafka-serialization-core_2.12/[RELEASE]/kafka-serialization-core_2.12-[RELEASE].jar)
 
 The aim of this library is to provide the Lego&trade; bricks to build a serializer/deserializer for kafka messages. 
 
