@@ -9,13 +9,13 @@ defaults:
       paths:
       - ~/.ivy2
       - ~/.sbt
-      key: dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
+      key: dependencies-v2-{{ .Branch }}-{{ checksum "build.sbt" }}
   - &restore_dependencies_cache
     restore_cache:
       keys:
-        - dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
-        - dependencies-{{ .Branch }}
-        - dependencies
+        - dependencies-v2-{{ .Branch }}-{{ checksum "build.sbt" }}
+        - dependencies-v2-{{ .Branch }}
+        - dependencies-v2
 
   - &configure_git_credetials
     run:
