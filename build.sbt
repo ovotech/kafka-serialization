@@ -82,16 +82,7 @@ lazy val `kafka-serialization` = project
 lazy val doc = project
   .in(file("doc"))
   .enablePlugins(MdocPlugin)
-  .dependsOn(
-    avro,
-    avro4s,
-    cats,
-    circe,
-    core,
-    json4s,
-    `jsoniter-scala`,
-    spray
-  )
+  .dependsOn(avro, avro4s, cats, circe, core, json4s, `jsoniter-scala`, spray)
   .settings(
     name := "kafka-serialization-doc",
     publishArtifact := false,
