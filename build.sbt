@@ -4,7 +4,7 @@ import sbtrelease.tagsonly.TagsOnly._
 
 lazy val catsVersion = "2.1.0"
 lazy val circeVersion = "0.11.1"
-lazy val logbackVersion = "1.2.3"
+lazy val logbackVersion = "1.2.7"
 lazy val avro4sVersion = "1.9.0"
 lazy val avro4s2Version = "2.0.4"
 lazy val json4sVersion = "3.6.7"
@@ -16,7 +16,7 @@ lazy val confluentPlatformVersion = "5.3.7"
 lazy val scalaTestVersion = "3.0.8"
 lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
-lazy val wiremockVersion = "2.26.0"
+lazy val wiremockVersion = "2.27.0"
 lazy val scalaArmVersion = "2.0"
 
 lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
