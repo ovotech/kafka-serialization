@@ -16,7 +16,7 @@ lazy val confluentPlatformVersion = "5.3.7"
 lazy val scalaTestVersion = "3.0.8"
 lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
-lazy val wiremockVersion = "2.27.0"
+lazy val wiremockVersion = "2.32.0"
 lazy val scalaArmVersion = "2.0"
 
 lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
@@ -107,7 +107,7 @@ lazy val testkit = project
       "org.scalatest" %% "scalatest" % scalaTestVersion,
       "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
       "org.scalamock" %% "scalamock-scalatest-support" % scalaMockVersion,
-      "com.github.tomakehurst" % "wiremock" % wiremockVersion,
+      "com.github.tomakehurst" % "wiremock-jre8" % wiremockVersion,
       "com.jsuereth" %% "scala-arm" % scalaArmVersion,
       "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
