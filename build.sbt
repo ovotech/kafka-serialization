@@ -12,7 +12,7 @@ lazy val slf4jVersion = "1.7.30"
 lazy val sprayJsonVersion = "1.3.5"
 lazy val kafkaClientVersion = "2.7.2"
 lazy val jsoninterScalaVersion = "1.0.0"
-lazy val confluentPlatformVersion = "5.3.2"
+lazy val confluentPlatformVersion = "5.3.7"
 lazy val scalaTestVersion = "3.0.8"
 lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
@@ -71,7 +71,8 @@ lazy val `kafka-serialization` = project
         resolvers ++= Seq(
           Resolver.mavenLocal,
           Resolver.typesafeRepo("releases"),
-          "confluent-release" at "https://packages.confluent.io/maven/"
+          "confluent-release" at "https://packages.confluent.io/maven/",
+          "redhat-ga" at "https://maven.repository.redhat.com/ga/"
         )
       )
     )
