@@ -151,6 +151,11 @@ workflows:
   build-and-deploy:
     jobs:
       - build
+      - snyk_test:
+          filters:
+            branches:
+              only:
+                - master
       - unit_test:
           requires:
             - build
