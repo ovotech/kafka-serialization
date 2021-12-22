@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  snyk: snyk/snyk@1.1.2
 
 defaults:
   - &defaults
@@ -29,6 +32,18 @@ defaults:
 
 
 jobs:
+  snyk_test:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - snyk/scan:
+          project: '${CIRCLE_PROJECT_REPONAME}'
+          severity-threshold: high
+          fail-on-issues: false
+          monitor-on-build: true
+          organization: 'oep-comms'
+
   build:
     <<: *defaults
 
@@ -136,6 +151,11 @@ workflows:
   build-and-deploy:
     jobs:
       - build
+      - snyk_test:
+          filters:
+            branches:
+              only:
+                - master
       - unit_test:
           requires:
             - build

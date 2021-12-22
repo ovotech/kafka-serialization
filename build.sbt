@@ -4,19 +4,19 @@ import sbtrelease.tagsonly.TagsOnly._
 
 lazy val catsVersion = "2.1.0"
 lazy val circeVersion = "0.11.1"
-lazy val logbackVersion = "1.2.9"
+lazy val logbackVersion = "1.2.7"
 lazy val avro4sVersion = "1.9.0"
 lazy val avro4s2Version = "2.0.4"
 lazy val json4sVersion = "3.6.7"
 lazy val slf4jVersion = "1.7.30"
 lazy val sprayJsonVersion = "1.3.5"
-lazy val kafkaClientVersion = "2.3.0"
+lazy val kafkaClientVersion = "2.7.2"
 lazy val jsoninterScalaVersion = "1.0.0"
-lazy val confluentPlatformVersion = "5.3.2"
+lazy val confluentPlatformVersion = "5.3.7"
 lazy val scalaTestVersion = "3.0.8"
 lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
-lazy val wiremockVersion = "2.24.0"
+lazy val wiremockVersion = "2.32.0"
 lazy val scalaArmVersion = "2.0"
 
 lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
@@ -71,7 +71,8 @@ lazy val `kafka-serialization` = project
         resolvers ++= Seq(
           Resolver.mavenLocal,
           Resolver.typesafeRepo("releases"),
-          "confluent-release" at "https://packages.confluent.io/maven/"
+          "confluent-release" at "https://packages.confluent.io/maven/",
+          "redhat-ga" at "https://maven.repository.redhat.com/ga/"
         )
       )
     )
@@ -106,7 +107,7 @@ lazy val testkit = project
       "org.scalatest" %% "scalatest" % scalaTestVersion,
       "org.scalacheck" %% "scalacheck" % scalaCheckVersion,
       "org.scalamock" %% "scalamock-scalatest-support" % scalaMockVersion,
-      "com.github.tomakehurst" % "wiremock" % wiremockVersion,
+      "com.github.tomakehurst" % "wiremock-jre8" % wiremockVersion,
       "com.jsuereth" %% "scala-arm" % scalaArmVersion,
       "org.slf4j" % "log4j-over-slf4j" % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
