@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  snyk: snyk/snyk@1.1.2
 
 defaults:
   - &defaults
@@ -9,13 +12,13 @@ defaults:
       paths:
       - ~/.ivy2
       - ~/.sbt
-      key: dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
+      key: dependencies-v2-{{ .Branch }}-{{ checksum "build.sbt" }}
   - &restore_dependencies_cache
     restore_cache:
       keys:
-        - dependencies-{{ .Branch }}-{{ checksum "build.sbt" }}
-        - dependencies-{{ .Branch }}
-        - dependencies
+        - dependencies-v2-{{ .Branch }}-{{ checksum "build.sbt" }}
+        - dependencies-v2-{{ .Branch }}
+        - dependencies-v2
 
   - &configure_git_credetials
     run:
@@ -29,6 +32,18 @@ defaults:
 
 
 jobs:
+  snyk_test:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - snyk/scan:
+          project: '${CIRCLE_PROJECT_REPONAME}'
+          severity-threshold: high
+          fail-on-issues: false
+          monitor-on-build: true
+          organization: 'oep-comms'
+
   build:
     <<: *defaults
 
@@ -93,7 +108,7 @@ jobs:
       - store_artifacts:
           path: target/gc.log
 
-  publish:
+  tag:
 
     <<: *defaults
 
@@ -112,23 +127,46 @@ jobs:
           name: Tag Release
           command: build/tag.sh
 
+  publish:
+
+    <<: *defaults
+
+    steps:
+
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - *restore_dependencies_cache
+
+      - *configure_git_credetials
+
       - run:
           name: Release
-          command: sbt releaseEarly
+          command: sbt publish
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
       - build
+      - snyk_test:
+          filters:
+            branches:
+              only:
+                - master
       - unit_test:
           requires:
-          - build
-      - publish:
-          requires:
             - build
+      - tag:
+          requires:
             - unit_test
           filters:
             branches:
               only:
                 - master
+      - publish:
+          context: comms-internal-build
+          requires:
+            - tag

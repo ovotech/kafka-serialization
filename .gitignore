@@ -2,6 +2,7 @@
 .idea/
 .idea_modules/
 *.iml
+.bsp/
 
 # Ensime
 .ensime
