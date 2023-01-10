@@ -16,7 +16,7 @@ lazy val confluentPlatformVersion = "5.3.7"
 lazy val scalaTestVersion = "3.0.8"
 lazy val scalaCheckVersion = "1.14.3"
 lazy val scalaMockVersion = "3.6.0"
-lazy val wiremockVersion = "2.32.0"
+lazy val wiremockVersion = "2.35.0"
 lazy val scalaArmVersion = "2.0"
 
 lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
