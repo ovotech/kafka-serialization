@@ -151,6 +151,8 @@ workflows:
     jobs:
       - build
       - snyk_test:
+          context:
+            - comms-internal-build
           filters:
             branches:
               only:
